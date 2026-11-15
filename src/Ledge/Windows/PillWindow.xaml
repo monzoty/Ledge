@@ -1,0 +1,52 @@
+<!--
+  The overlay window (ADR-0003): one fixed-size, transparent, topmost window.
+  Everything outside the pill is fully transparent, so clicks pass through
+  to the app underneath.
+-->
+<Window x:Class="Ledge.Windows.PillWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{StaticResource AppName}"
+        Width="{StaticResource OverlayWindowWidth}"
+        Height="{StaticResource OverlayWindowHeight}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        WindowStartupLocation="Manual"
+        UseLayoutRounding="True">
+
+  <Grid>
+    <!-- Collapsed pill, "All clear" state (DESIGN.md §2) -->
+    <Border x:Name="Pill"
+            Width="{StaticResource PillWidth}"
+            Height="{StaticResource PillHeight}"
+            Margin="{StaticResource PillTopOffset}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            CornerRadius="{StaticResource PillCornerRadius}"
+            Background="{StaticResource PillBackgroundBrush}">
+
+      <StackPanel Orientation="Horizontal"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+        <TextBlock Text="{StaticResource GlyphCheckMark}"
+                   FontFamily="{StaticResource IconFont}"
+                   FontSize="{StaticResource PillIconSize}"
+                   Foreground="{StaticResource PillTextBrush}"
+                   VerticalAlignment="Center" />
+        <TextBlock Text="{StaticResource PillAllClear}"
+                   Margin="{StaticResource PillIconGap}"
+                   FontFamily="{StaticResource UiFont}"
+                   FontSize="{StaticResource PillTextSize}"
+                   FontWeight="SemiBold"
+                   Typography.NumeralAlignment="Tabular"
+                   Foreground="{StaticResource PillTextBrush}"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

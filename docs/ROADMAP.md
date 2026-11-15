@@ -7,7 +7,7 @@
 Branch naming: `m1-overlay-window`, `m2-hotkey-and-expand`, …
 Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 
-**Current milestone: M0**
+**Current milestone: M1**
 
 ---
 
@@ -16,12 +16,12 @@ Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 
 - [x] Pick a name (`DESIGN.md §0`) → **Ledge**
 - [x] `git init`, `dotnet new gitignore`
-- [ ] First commit (owner)
+- [x] First commit
 - [x] Create the solution: `src/Ledge` (WPF), `src/Ledge.Core` (classlib), `tests/Ledge.Core.Tests` (xUnit)
 - [x] `Directory.Build.props`: `<Nullable>enable</Nullable>`, `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`, `<ImplicitUsings>enable</ImplicitUsings>`
 - [x] Add `.editorconfig` (file-scoped namespaces, `_camelCase` private fields, naming rules)
 - [x] Add a `LICENSE` file (MIT)
-- [ ] Push to a GitHub repo
+- [x] Push to a GitHub repo
 - [ ] (Optional) GitHub Actions: build + test on every push (`windows-latest`)
 
 **Done when:** `dotnet build` and `dotnet test` pass; an empty window opens.

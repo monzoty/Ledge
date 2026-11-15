@@ -181,7 +181,7 @@ block apps underneath.
 | Hover open/close delays | `DispatcherTimer`s started on `MouseEnter`/`MouseLeave` |
 | Global hotkey | `RegisterHotKey` + listen for `WM_HOTKEY` (0x0312) via `HwndSource.AddHook`; `UnregisterHotKey` on exit; a `false` return means the hotkey is taken |
 | Sharp on every monitor | `app.manifest` → `<dpiAwareness>PerMonitorV2</dpiAwareness>`; convert pixels ↔ DIPs when positioning |
-| Position | Primary monitor work area (`SystemParameters.WorkArea`); listen to `SystemEvents.DisplaySettingsChanged` and `WM_SETTINGCHANGE` (taskbar) |
+| Position | All in **physical pixels**: primary work area from `MonitorFromPoint` + `GetMonitorInfo`, window size from `GetWindowRect`, move with `SetWindowPos`. (`SystemParameters.WorkArea` was dropped: under PerMonitorV2 it converts with the start-up DPI and goes wrong after a scaling change.) Re-position on `SystemEvents.DisplaySettingsChanged`, `SystemParameters.StaticPropertyChanged` ("WorkArea", i.e. taskbar) and `Window.DpiChanged` |
 | Hide over fullscreen apps | `SHQueryUserNotificationState` (`QUNS_BUSY`, `QUNS_RUNNING_D3D_FULL_SCREEN`, `QUNS_PRESENTATION_MODE`), checked on `EVENT_SYSTEM_FOREGROUND` via `SetWinEventHook`, not by polling |
 | Theme | Read `AppsUseLightTheme` (HKCU `…\Themes\Personalize`), react to `WM_SETTINGCHANGE` ("ImmersiveColorSet"), swap the colour dictionary |
 | Animations off | `SystemParameters.ClientAreaAnimation` (and `SPI_GETCLIENTAREAANIMATION`) |

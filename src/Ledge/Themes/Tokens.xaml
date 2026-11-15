@@ -1,0 +1,54 @@
+<!--
+  Design tokens: sizes, radii, spacing and fonts.
+  Source of truth: docs/DESIGN.md §2–§3. Do not change values here without
+  changing DESIGN.md first. Colours live in Colors.<Theme>.xaml.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+  <!-- Spacing (DESIGN.md §3): every margin/padding is a multiple of 4. -->
+  <sys:Double x:Key="SpacingUnit">4</sys:Double>
+
+  <!-- Pill (DESIGN.md §1–§2) -->
+  <sys:Double x:Key="PillWidth">112</sys:Double>
+  <sys:Double x:Key="PillTimerWidth">136</sys:Double>
+  <sys:Double x:Key="PillHeight">28</sys:Double>
+  <Thickness x:Key="PillTopOffset">0,4,0,0</Thickness>
+  <CornerRadius x:Key="PillCornerRadius">14</CornerRadius>
+  <sys:Double x:Key="PillHoverMargin">8</sys:Double>
+  <!-- Gap between pill icon and label: one SpacingUnit -->
+  <Thickness x:Key="PillIconGap">4,0,0,0</Thickness>
+
+  <!-- Panel (DESIGN.md §2–§3) -->
+  <sys:Double x:Key="PanelWidth">360</sys:Double>
+  <sys:Double x:Key="PanelMinHeight">160</sys:Double>
+  <sys:Double x:Key="PanelMaxHeight">520</sys:Double>
+  <CornerRadius x:Key="PanelCornerRadius">16</CornerRadius>
+  <CornerRadius x:Key="RowCornerRadius">8</CornerRadius>
+  <sys:Double x:Key="PanelShadowBlur">24</sys:Double>
+  <sys:Double x:Key="PanelShadowOffsetY">8</sys:Double>
+
+  <!--
+    Overlay window size (ADR-0003). Derived, not a design value:
+      margin = PanelShadowBlur + PanelShadowOffsetY = 32
+      width  = PanelWidth    + 2 × 32 = 424
+      height = PanelMaxHeight + 2 × 32 = 584
+  -->
+  <sys:Double x:Key="OverlayWindowWidth">424</sys:Double>
+  <sys:Double x:Key="OverlayWindowHeight">584</sys:Double>
+
+  <!-- Typography (DESIGN.md §3) -->
+  <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+  <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+  <sys:Double x:Key="PillTextSize">12</sys:Double>
+  <sys:Double x:Key="BodyTextSize">14</sys:Double>
+  <sys:Double x:Key="CaptionTextSize">12</sys:Double>
+  <sys:Double x:Key="SmallTextSize">12</sys:Double>
+  <sys:Double x:Key="PillIconSize">12</sys:Double>
+  <sys:Double x:Key="PanelIconSize">16</sys:Double>
+
+  <!-- Icon glyphs (Segoe Fluent Icons / MDL2 share these code points) -->
+  <sys:String x:Key="GlyphCheckMark">&#xE73E;</sys:String>
+
+</ResourceDictionary>
