@@ -33,14 +33,14 @@ Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 ## M1 — The overlay window
 **Goal:** a static pill at top-centre that behaves like an overlay. [F1.1–F1.3, F1.5, F1.7, F5.2]
 
-- [ ] `Themes/Tokens.xaml` + `Colors.Dark.xaml` from `DESIGN.md §3` (light colours come in M4)
-- [ ] Borderless, transparent window; a 112 × 28 pill floating 4 DIP below the top edge
-- [ ] Always on top; not in the taskbar; not in Alt+Tab (`WS_EX_TOOLWINDOW`)
-- [ ] Hovering or clicking doesn't take focus from the current app yet (`WS_EX_NOACTIVATE`)
-- [ ] Transparent area around the pill lets clicks through to the app underneath
-- [ ] `app.manifest` with PerMonitorV2; correct position at 100/125/150/200 %
-- [ ] Re-positions when screen resolution, scaling or the taskbar changes
-- [ ] Single-instance check (second launch exits)
+- [x] `Themes/Tokens.xaml` + `Colors.Dark.xaml` from `DESIGN.md §3` (light colours come in M4)
+- [x] Borderless, transparent window; a 112 × 28 pill floating 4 DIP below the top edge
+- [x] Always on top; not in the taskbar; not in Alt+Tab (`WS_EX_TOOLWINDOW`)
+- [x] Hovering or clicking doesn't take focus from the current app yet (`WS_EX_NOACTIVATE`)
+- [x] Transparent area around the pill lets clicks through to the app underneath
+- [x] `app.manifest` with PerMonitorV2; correct position at 100/125/150/200 %
+- [x] Re-positions when screen resolution, scaling or the taskbar changes
+- [x] Single-instance check (second launch exits)
 
 **Manual checklist:** not in Alt+Tab · not in the taskbar · stays on top of a
 maximised browser · clicking just beside the pill reaches the browser · crisp
