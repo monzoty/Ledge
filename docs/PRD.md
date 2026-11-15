@@ -322,7 +322,7 @@ Resolved (2026-11-16). Design answers are in `DESIGN.md`:
 
 - ✅ Name: **Ledge**, no mascot (DESIGN.md §0).
 - ✅ Placement: **top-centre**, floating 4 DIP below the top edge (DESIGN.md §1).
-- ✅ Hotkey: **Ctrl+Alt+Space**, configurable (DESIGN.md §5).
+- ✅ Hotkey: **Win+Alt+L**, configurable (DESIGN.md §5). Changed from Ctrl+Alt+Space on 2026-11-16 because another app on the owner's PC already uses that.
 - ✅ Copy for empty states, placeholder and notifications (DESIGN.md §6).
 - ✅ Distribution and license: **free and open source under MIT**, released on
   GitHub (installer arrives in M7).

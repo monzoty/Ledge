@@ -104,6 +104,85 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
+    // --- Global hotkey -----------------------------------------------------
+
+    /// <summary>Message sent to the registering window when the hotkey is pressed.</summary>
+    internal const int WmHotkey = 0x0312; // WM_HOTKEY
+
+    /// <summary>Parent value that creates a message-only window (never visible).</summary>
+    internal const nint HwndMessage = -3; // HWND_MESSAGE
+
+    /// <summary>GetLastError value when another app already owns the key combination.</summary>
+    internal const int ErrorHotkeyAlreadyRegistered = 1409; // ERROR_HOTKEY_ALREADY_REGISTERED
+
+    // Modifier flags for RegisterHotKey.
+    internal const uint ModAlt = 0x0001;      // MOD_ALT
+    internal const uint ModControl = 0x0002;  // MOD_CONTROL
+    internal const uint ModShift = 0x0004;    // MOD_SHIFT
+    internal const uint ModWin = 0x0008;      // MOD_WIN
+    internal const uint ModNoRepeat = 0x4000; // MOD_NOREPEAT: holding the keys fires once, not repeatedly
+
+    /// <summary>
+    /// Asks Windows to post WM_HOTKEY to hWnd whenever the key combination is
+    /// pressed, no matter which app has focus. Fails if another app owns it.
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-registerhotkey
+    /// </summary>
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool RegisterHotKey(nint hWnd, int id, uint fsModifiers, uint vk);
+
+    /// <summary>
+    /// Releases a hotkey registered with RegisterHotKey.
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-unregisterhotkey
+    /// </summary>
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool UnregisterHotKey(nint hWnd, int id);
+
+    // --- Foreground (focus) ------------------------------------------------
+
+    /// <summary>
+    /// Returns the window the user is currently working in (receives keyboard input).
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getforegroundwindow
+    /// </summary>
+    [LibraryImport("user32.dll")]
+    internal static partial nint GetForegroundWindow();
+
+    /// <summary>
+    /// Brings a window to the foreground. Windows only allows this for the
+    /// process the user last interacted with (a foreground "lock" stops pop-ups
+    /// stealing focus); we call it while Ledge is still in the foreground.
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setforegroundwindow
+    /// </summary>
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool SetForegroundWindow(nint hWnd);
+
+    /// <summary>
+    /// True if the handle still refers to an existing window (the app may have closed meanwhile).
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-iswindow
+    /// </summary>
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool IsWindow(nint hWnd);
+
+    // --- Keyboard state ----------------------------------------------------
+
+    // Virtual-key codes. https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes
+    internal const int VkShift = 0x10;   // VK_SHIFT
+    internal const int VkControl = 0x11; // VK_CONTROL
+    internal const int VkMenu = 0x12;    // VK_MENU (Alt)
+    internal const int VkLWin = 0x5B;    // VK_LWIN
+    internal const int VkRWin = 0x5C;    // VK_RWIN
+
+    /// <summary>
+    /// Whether a key is physically down right now (high bit set = down),
+    /// regardless of which app has focus.
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getasynckeystate
+    /// </summary>
+    [LibraryImport("user32.dll")]
+    internal static partial short GetAsyncKeyState(int vKey);
+
     // --- Structs (memory layout must match the Win32 definitions) ----------
 
     /// <summary>Win32 POINT. https://learn.microsoft.com/windows/win32/api/windef/ns-windef-point</summary>

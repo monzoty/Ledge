@@ -131,7 +131,7 @@ public sealed record FocusSession                     // in memory only in v0.1
 public sealed record AppSettings                      // settings.json
 {
     public int SchemaVersion { get; init; } = 1;
-    public string Hotkey { get; init; } = "Ctrl+Alt+Space"; // parsed in the app layer
+    public string Hotkey { get; init; } = "Win+Alt+L"; // DESIGN.md §5; parsed in the app layer
     public bool StartWithWindows { get; init; }
     public ThemeMode Theme { get; init; } = ThemeMode.System;
     public int DefaultFocusMinutes { get; init; } = 25;

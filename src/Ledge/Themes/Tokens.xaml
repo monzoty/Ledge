@@ -20,6 +20,32 @@
   <!-- Gap between pill icon and label: one SpacingUnit -->
   <Thickness x:Key="PillIconGap">4,0,0,0</Thickness>
 
+  <!--
+    Hover zone (DESIGN.md §1). Derived: PillHoverMargin (8) on left, right and
+    bottom; PillTopOffset (4) on top, so the zone touches the screen edge.
+  -->
+  <Thickness x:Key="HoverZonePadding">8,4,8,8</Thickness>
+
+  <!-- Global hotkey default (DESIGN.md §5); configurable in Settings from M4 -->
+  <sys:String x:Key="DefaultHotkey">Win+Alt+L</sys:String>
+
+  <!-- Motion (DESIGN.md §4) -->
+  <sys:TimeSpan x:Key="ExpandDuration">0:0:0.220</sys:TimeSpan>
+  <sys:TimeSpan x:Key="CollapseDuration">0:0:0.160</sys:TimeSpan>
+  <!-- Expand: content starts fading in this long after the size starts growing -->
+  <sys:TimeSpan x:Key="ExpandContentFadeDelay">0:0:0.060</sys:TimeSpan>
+  <!--
+    Derived, not in DESIGN.md:
+    - Collapse content fade-out mirrors the expand fade delay (60 ms).
+    - Size changes are split evenly: expand = width then height (110 ms each);
+      collapse = height then width over the remaining 100 ms (50 ms each).
+  -->
+  <sys:TimeSpan x:Key="CollapseContentFadeDuration">0:0:0.060</sys:TimeSpan>
+
+  <!-- Hover timing (DESIGN.md §5) -->
+  <sys:TimeSpan x:Key="HoverOpenDelay">0:0:0.150</sys:TimeSpan>
+  <sys:TimeSpan x:Key="HoverCloseDelay">0:0:0.300</sys:TimeSpan>
+
   <!-- Panel (DESIGN.md §2–§3) -->
   <sys:Double x:Key="PanelWidth">360</sys:Double>
   <sys:Double x:Key="PanelMinHeight">160</sys:Double>
@@ -28,6 +54,15 @@
   <CornerRadius x:Key="RowCornerRadius">8</CornerRadius>
   <sys:Double x:Key="PanelShadowBlur">24</sys:Double>
   <sys:Double x:Key="PanelShadowOffsetY">8</sys:Double>
+  <sys:Double x:Key="PanelShadowOpacity">0.35</sys:Double>
+  <!-- Panel layout (DESIGN.md §2): padding 16, gaps 12 -->
+  <Thickness x:Key="PanelPadding">16</Thickness>
+  <sys:Double x:Key="QuickAddHeight">36</sys:Double>
+  <sys:Double x:Key="TimerRowHeight">32</sys:Double>
+  <sys:Double x:Key="TaskRowHeight">32</sys:Double>
+  <!-- Quick-add inner spacing. Derived from SpacingUnit (not in DESIGN.md): 12 at the edges, 8 between icon and text -->
+  <Thickness x:Key="QuickAddLeadingIconMargin">12,0,8,0</Thickness>
+  <Thickness x:Key="QuickAddTrailingIconMargin">8,0,12,0</Thickness>
 
   <!--
     Overlay window size (ADR-0003). Derived, not a design value:
@@ -50,5 +85,13 @@
 
   <!-- Icon glyphs (Segoe Fluent Icons / MDL2 share these code points) -->
   <sys:String x:Key="GlyphCheckMark">&#xE73E;</sys:String>
+  <sys:String x:Key="GlyphAdd">&#xE710;</sys:String>
+  <sys:String x:Key="GlyphReturnKey">&#xE751;</sys:String>
+
+  <!--
+    Near-transparent hit area (ARCHITECTURE.md §6). Alpha 1/255 is invisible but,
+    unlike alpha 0, still receives the mouse — so the hover margin works.
+  -->
+  <SolidColorBrush x:Key="HoverHitBrush" Color="#01000000" />
 
 </ResourceDictionary>

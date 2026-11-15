@@ -20,6 +20,23 @@ internal static class WindowStyles
         SetExStyle(hwnd, exStyle | NativeMethods.WsExToolWindow | NativeMethods.WsExNoActivate);
     }
 
+    /// <summary>
+    /// Turns WS_EX_NOACTIVATE on (window can't take focus) or off (it can be
+    /// activated so the user can type). Only this one bit is changed.
+    /// </summary>
+    public static void SetNoActivate(nint hwnd, bool noActivate)
+    {
+        var exStyle = GetExStyle(hwnd);
+        var updated = noActivate
+            ? exStyle | NativeMethods.WsExNoActivate
+            : exStyle & ~NativeMethods.WsExNoActivate;
+
+        if (updated != exStyle)
+        {
+            SetExStyle(hwnd, updated);
+        }
+    }
+
     private static nint GetExStyle(nint hwnd)
     {
         return Environment.Is64BitProcess

@@ -8,5 +8,8 @@
 
   <sys:String x:Key="AppName">Ledge</sys:String>
   <sys:String x:Key="PillAllClear">All clear</sys:String>
+  <sys:String x:Key="QuickAddPlaceholder">Add a task…</sys:String>
+  <!-- {0} = the shortcut, e.g. "Win+Alt+L" -->
+  <sys:String x:Key="HotkeyTakenMessage">{0} is already used by another app. Pick a different shortcut in Settings.</sys:String>
 
 </ResourceDictionary>

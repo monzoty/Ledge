@@ -1,22 +1,75 @@
+using System.Globalization;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Ledge.Interop;
 using Ledge.Services;
 
 namespace Ledge.Windows;
 
 /// <summary>
-/// The overlay window. Code-behind holds only visual concerns
-/// (placement now; animations and focus later).
+/// The overlay window. Code-behind holds only visual concerns: placement,
+/// hover open/close, focus hand-off, and (later) animations.
+/// In M3 the "is it expanded?" state moves to PillViewModel.
 /// </summary>
+/// <remarks>
+/// Two ways to be open (PRD F2):
+/// <list type="bullet">
+/// <item>Hover: shown, but NOT focused. Closes when the mouse leaves.</item>
+/// <item>Hotkey / click: shown AND focused (cursor in quick-add). Closes on
+/// Esc, hotkey, or clicking elsewhere; focus goes back to the previous app.</item>
+/// </list>
+/// </remarks>
 public sealed partial class PillWindow : Window
 {
     // Created here for now; injected through the Generic Host from M3.
     private readonly ScreenService _screen = new();
+    private readonly HotkeyService _hotkey = new();
+
+    // Hover delays (DESIGN.md §5) stop the panel flickering when the mouse just passes by.
+    // DispatcherTimer ticks on the UI thread, so it can touch WPF elements directly.
+    // https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
+    private readonly DispatcherTimer _openTimer;
+    private readonly DispatcherTimer _closeTimer;
+
+    /// <summary>How often we check whether the hotkey's modifiers are released.</summary>
+    private static readonly TimeSpan ReturnFocusPollInterval = TimeSpan.FromMilliseconds(20);
+
+    /// <summary>Give up waiting after this long (e.g. a key is stuck) and hand focus back anyway.</summary>
+    private static readonly TimeSpan ReturnFocusMaxWait = TimeSpan.FromSeconds(2);
+
+    // Waits for Win/Alt/Ctrl/Shift to be released before handing focus back.
+    private readonly DispatcherTimer _returnFocusTimer;
+
+    /// <summary>The app the user was in before we took focus; 0 if none.</summary>
+    private nint _previousForeground;
+
+    /// <summary>The app to hand focus back to once modifiers are up; 0 if nothing pending.</summary>
+    private nint _pendingFocusReturn;
+    private int _returnFocusPolls;
 
     public PillWindow()
     {
         InitializeComponent();
+        InitializeAnimation();
+
+        _returnFocusTimer = new DispatcherTimer { Interval = ReturnFocusPollInterval };
+        _returnFocusTimer.Tick += (_, _) => TryReturnFocus();
+
+        _openTimer = new DispatcherTimer { Interval = (TimeSpan)FindResource("HoverOpenDelay") };
+        _openTimer.Tick += (_, _) =>
+        {
+            _openTimer.Stop();
+            Expand();
+        };
+
+        _closeTimer = new DispatcherTimer { Interval = (TimeSpan)FindResource("HoverCloseDelay") };
+        _closeTimer.Tick += (_, _) =>
+        {
+            _closeTimer.Stop();
+            Collapse();
+        };
 
         _screen.LayoutChanged += (_, _) => PositionAtTopCentre();
 
@@ -24,8 +77,31 @@ public sealed partial class PillWindow : Window
         // WPF resizes the window first, so re-centre after that has happened.
         DpiChanged += (_, _) => Dispatcher.BeginInvoke(PositionAtTopCentre);
 
-        Closed += (_, _) => _screen.Dispose();
+        _hotkey.Pressed += (_, _) => OnHotkeyPressed();
+
+        // The user clicked another window (or Alt+Tabbed away): close, and
+        // leave focus where they put it.
+        Deactivated += (_, _) => Collapse();
+
+        Closed += (_, _) =>
+        {
+            _hotkey.Dispose();
+            _screen.Dispose();
+        };
     }
+
+    /// <summary>
+    /// The logical state. It changes immediately; the animation may still be
+    /// catching up visually (see PillWindow.Animation.cs).
+    /// </summary>
+    private bool IsExpanded { get; set; }
+
+    /// <summary>
+    /// True only when Windows really gives us keyboard focus. We ask Windows
+    /// instead of using WPF's IsActive: on a WS_EX_NOACTIVATE window, WPF sets
+    /// IsActive as soon as it is clicked, even though focus never moved.
+    /// </summary>
+    private bool HasFocus => NativeMethods.GetForegroundWindow() == Handle;
 
     private nint Handle => new WindowInteropHelper(this).Handle;
 
@@ -38,7 +114,238 @@ public sealed partial class PillWindow : Window
         base.OnSourceInitialized(e);
         WindowStyles.ApplyOverlayStyles(Handle);
         PositionAtTopCentre();
+        RegisterHotkey();
     }
+
+    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    {
+        base.OnPreviewKeyDown(e);
+
+        if (e.Key == Key.Escape && IsExpanded)
+        {
+            e.Handled = true;
+            CloseAndReturnFocus();
+        }
+    }
+
+    // --- Hover ---------------------------------------------------------------
+
+    private void OnHoverZoneMouseEnter(object sender, MouseEventArgs e)
+    {
+        // Mouse came back before the close delay ran out: stay open.
+        _closeTimer.Stop();
+
+        if (!IsExpanded)
+        {
+            _openTimer.Start();
+        }
+    }
+
+    private void OnHoverZoneMouseLeave(object sender, MouseEventArgs e)
+    {
+        // Mouse only passed through: cancel the pending open.
+        _openTimer.Stop();
+
+        // A focused panel stays open, so a half-typed task isn't lost (PRD F2.6).
+        if (IsExpanded && !HasFocus)
+        {
+            _closeTimer.Start();
+        }
+    }
+
+    // --- Click ---------------------------------------------------------------
+
+    /// <summary>Clicking the collapsed pill = same as the hotkey (DESIGN.md §5).</summary>
+    private void OnPillMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // The shell is also the panel once expanded; only a click on the
+        // collapsed pill should open-with-focus.
+        if (IsExpanded)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        OpenWithFocus();
+    }
+
+    /// <summary>
+    /// Clicking anywhere inside a hover-opened panel: take focus first, then let
+    /// the click continue to whatever was clicked (e.g. the text box).
+    /// Hooked on the Shell (which paints the background), because clicks on empty,
+    /// unpainted parts of the content layer are never delivered to that layer.
+    /// </summary>
+    private void OnPanelPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (IsExpanded && !HasFocus)
+        {
+            TakeFocus();
+        }
+    }
+
+    // --- Hotkey --------------------------------------------------------------
+
+    /// <summary>
+    /// Registers the default hotkey (DESIGN.md §5). If another app owns it,
+    /// tell the user once; hover still works, so the app keeps running.
+    /// </summary>
+    private void RegisterHotkey()
+    {
+        var text = (string)FindResource("DefaultHotkey");
+        var gesture = (KeyGesture)new KeyGestureConverter().ConvertFromInvariantString(text)!;
+
+        if (_hotkey.TryRegister(gesture))
+        {
+            return;
+        }
+
+        // Show the shortcut exactly as written in Tokens.xaml; WPF's own display
+        // string would reorder it (e.g. "Alt+Windows+L").
+        var message = string.Format(
+            CultureInfo.CurrentCulture,
+            (string)FindResource("HotkeyTakenMessage"),
+            text);
+
+        // Show it after start-up finishes, so the pill appears first.
+        Dispatcher.BeginInvoke(() =>
+            MessageBox.Show(message, (string)FindResource("AppName"), MessageBoxButton.OK, MessageBoxImage.Warning));
+    }
+
+    /// <summary>
+    /// Focused and open → close. Anything else (closed, or hover-opened
+    /// without focus) → open with the cursor in quick-add.
+    /// </summary>
+    private void OnHotkeyPressed()
+    {
+        if (IsExpanded && HasFocus)
+        {
+            CloseAndReturnFocus();
+        }
+        else
+        {
+            OpenWithFocus();
+        }
+    }
+
+    // --- Open / close ----------------------------------------------------------
+
+    private void OpenWithFocus()
+    {
+        Expand();
+        TakeFocus();
+
+        // The panel was only just made visible, so WPF hasn't laid it out yet and
+        // the text box can't take focus. Run FocusInput after the layout pass.
+        // https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatcherpriority
+        Dispatcher.BeginInvoke(QuickAdd.FocusInput, DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// Remembers the app the user was in, then lets this window be activated.
+    /// Allowed by Windows because the user just interacted with us (hotkey or click).
+    /// </summary>
+    private void TakeFocus()
+    {
+        _openTimer.Stop();
+        _closeTimer.Stop();
+
+        // Re-opened while a hand-back was still waiting: cancel it, but keep
+        // remembering that app so the next close returns there.
+        if (_pendingFocusReturn != 0)
+        {
+            _returnFocusTimer.Stop();
+            _previousForeground = _pendingFocusReturn;
+            _pendingFocusReturn = 0;
+        }
+
+        // Remember the app the user is in, unless that's already us
+        // (Capture returns 0 for our own window, so we keep the earlier value).
+        var foreground = ForegroundWindow.Capture(Handle);
+        if (foreground != 0)
+        {
+            _previousForeground = foreground;
+        }
+
+        WindowStyles.SetNoActivate(Handle, noActivate: false);
+        Activate();
+    }
+
+    /// <summary>
+    /// Esc or hotkey: close now, and put focus back where it was as soon as
+    /// the modifier keys are released.
+    /// </summary>
+    /// <remarks>
+    /// Why wait: the hotkey fires when L goes down, while Win+Alt are still held.
+    /// If we handed focus back immediately, the other app would receive the
+    /// "Alt released" key-up, and in most apps a lone Alt tap activates the
+    /// menu bar — swallowing the user's next keystroke. Waiting means the
+    /// key-up lands in Ledge, where it does nothing.
+    /// </remarks>
+    private void CloseAndReturnFocus()
+    {
+        _pendingFocusReturn = _previousForeground;
+        _returnFocusPolls = 0;
+        Collapse();
+        TryReturnFocus();
+    }
+
+    private void TryReturnFocus()
+    {
+        var maxPolls = (int)(ReturnFocusMaxWait / ReturnFocusPollInterval);
+        if (ModifierKeysState.AnyDown() && _returnFocusPolls < maxPolls)
+        {
+            _returnFocusPolls++;
+            _returnFocusTimer.Start();
+            return;
+        }
+
+        _returnFocusTimer.Stop();
+        var target = _pendingFocusReturn;
+        _pendingFocusReturn = 0;
+
+        // Only hand back if we still have focus: if the user clicked somewhere
+        // else meanwhile, leave focus where they put it. (While we are the
+        // foreground window, Windows allows this hand-back.)
+        if (HasFocus)
+        {
+            ForegroundWindow.Restore(target);
+        }
+    }
+
+    private void Expand()
+    {
+        _openTimer.Stop();
+        _closeTimer.Stop();
+
+        if (IsExpanded)
+        {
+            return;
+        }
+
+        IsExpanded = true;
+        AnimateExpand();
+    }
+
+    /// <summary>
+    /// Hides the panel and makes the window non-activatable again, so hovering
+    /// and clicking the pill never steal focus while collapsed.
+    /// </summary>
+    private void Collapse()
+    {
+        _openTimer.Stop();
+        _closeTimer.Stop();
+
+        if (IsExpanded)
+        {
+            IsExpanded = false;
+            AnimateCollapse();
+        }
+
+        _previousForeground = 0;
+        WindowStyles.SetNoActivate(Handle, noActivate: true);
+    }
+
+    // --- Placement -------------------------------------------------------------
 
     /// <summary>
     /// Centres the window horizontally on the primary monitor's work area and

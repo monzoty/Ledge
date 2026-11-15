@@ -7,7 +7,7 @@
 Branch naming: `m1-overlay-window`, `m2-hotkey-and-expand`, …
 Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 
-**Current milestone: M1**
+**Current milestone: M2**
 
 ---
 
@@ -55,12 +55,12 @@ at each scaling level · moves correctly after a resolution change.
 ## M2 — Hotkey, hover and expand/collapse
 **Goal:** the pill opens and closes the way DESIGN.md §4–§5 describes. [F2.1–F2.6]
 
-- [ ] Global hotkey Ctrl+Alt+Space via `RegisterHotKey` / `WM_HOTKEY`; handle "already in use"
-- [ ] Hover opens after 150 ms; leaving closes after 300 ms; no flicker
-- [ ] Hotkey or click → activate the panel, focus a (placeholder) quick-add box, remember the previous window
-- [ ] Esc, the hotkey again, or a click outside closes it; focus returns to the previous app
-- [ ] A focused panel stays open when the mouse leaves
-- [ ] Expand 220 ms / collapse 160 ms animations; instant when "Show animations" is off
+- [x] Global hotkey Win+Alt+L via `RegisterHotKey` / `WM_HOTKEY`; handle "already in use"
+- [x] Hover opens after 150 ms; leaving closes after 300 ms; no flicker
+- [x] Hotkey or click → activate the panel, focus a (placeholder) quick-add box, remember the previous window
+- [x] Esc, the hotkey again, or a click outside closes it; focus returns to the previous app
+- [x] A focused panel stays open when the mouse leaves
+- [x] Expand 220 ms / collapse 160 ms animations; instant when "Show animations" is off
 
 **Manual checklist:** open/close 50 times with hover, hotkey and click; type in
 Notepad → hotkey → Esc → keep typing in Notepad without clicking.

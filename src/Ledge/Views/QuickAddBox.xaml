@@ -1,0 +1,67 @@
+<!--
+  Quick-add box (DESIGN.md §2): "[+] Add a task…  ⏎".
+  Visual only for now; adding tasks is wired up in M3.
+-->
+<UserControl x:Class="Ledge.Views.QuickAddBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="{StaticResource QuickAddHeight}">
+
+  <Border CornerRadius="{StaticResource RowCornerRadius}"
+          Background="{StaticResource SurfaceBrush}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <TextBlock Grid.Column="0"
+                 Text="{StaticResource GlyphAdd}"
+                 Margin="{StaticResource QuickAddLeadingIconMargin}"
+                 FontFamily="{StaticResource IconFont}"
+                 FontSize="{StaticResource PanelIconSize}"
+                 Foreground="{StaticResource TextSecondaryBrush}"
+                 VerticalAlignment="Center" />
+
+      <!-- Placeholder: shown only while the box is empty -->
+      <TextBlock Grid.Column="1"
+                 Text="{StaticResource QuickAddPlaceholder}"
+                 FontFamily="{StaticResource UiFont}"
+                 FontSize="{StaticResource BodyTextSize}"
+                 Foreground="{StaticResource TextSecondaryBrush}"
+                 VerticalAlignment="Center"
+                 IsHitTestVisible="False">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding Text, ElementName=Input}" Value="">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+
+      <TextBox x:Name="Input"
+               Grid.Column="1"
+               Background="Transparent"
+               BorderThickness="0"
+               Padding="0"
+               FontFamily="{StaticResource UiFont}"
+               FontSize="{StaticResource BodyTextSize}"
+               Foreground="{StaticResource TextPrimaryBrush}"
+               CaretBrush="{StaticResource TextPrimaryBrush}"
+               VerticalContentAlignment="Center" />
+
+      <TextBlock Grid.Column="2"
+                 Text="{StaticResource GlyphReturnKey}"
+                 Margin="{StaticResource QuickAddTrailingIconMargin}"
+                 FontFamily="{StaticResource IconFont}"
+                 FontSize="{StaticResource PanelIconSize}"
+                 Foreground="{StaticResource TextSecondaryBrush}"
+                 VerticalAlignment="Center" />
+    </Grid>
+  </Border>
+</UserControl>

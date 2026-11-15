@@ -20,4 +20,7 @@
   <SolidColorBrush x:Key="DangerBrush" Color="#F87171" />
   <SolidColorBrush x:Key="FocusRingBrush" Color="#F5A524" />
 
+  <!-- Panel shadow: black; opacity is in Tokens.xaml (PanelShadowOpacity) -->
+  <Color x:Key="PanelShadowColor">#000000</Color>
+
 </ResourceDictionary>

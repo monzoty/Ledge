@@ -130,11 +130,15 @@ change. There is still a notification when the timer ends.
 
 ## 5. Interaction details
 
-- **Global hotkey:** **Ctrl + Alt + Space** (configurable in Settings).
-  - Why: it isn't used by Windows; PowerToys Run uses Alt+Space and VS Code
-    uses Ctrl+Shift+Space, so neither clashes; and Space isn't a letter, so
-    it doesn't collide with AltGr characters on European keyboards.
-  - Fallback suggestion if it's taken: **Win + Alt + T**.
+- **Global hotkey:** **Win + Alt + L** ("L for Ledge"; configurable in Settings).
+  - Why (decided 2026-11-16): on the owner's PC, Ctrl+Alt+Space and
+    Win+Alt+T were already owned by other apps. Ctrl+L was considered and
+    rejected: as a *global* hotkey it would stop Ctrl+L working in every
+    other app (browser address bar, VS Code, Word, terminals). Win+Alt+L is
+    free, isn't used by Windows, and doesn't collide with AltGr characters.
+  - Fallbacks if it's taken: **Win + Alt + Space**, then **Ctrl + Alt + Shift + L**.
+  - Rule for future choices: never pick a shortcut that apps use inside
+    their own windows (Ctrl+letter, Ctrl+Shift+letter).
 - **Hover open delay:** **150 ms** · **close delay:** **300 ms** after the mouse
   leaves the panel and its hover zone.
 - **Clicking the collapsed pill:** does the same as the hotkey. It opens the

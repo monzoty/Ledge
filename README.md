@@ -35,7 +35,7 @@ dotnet watch --project src/Ledge
 
 ## Default shortcut
 
-**Ctrl + Alt + Space** opens the panel (configurable in Settings).
+**Win + Alt + L** opens the panel (configurable in Settings).
 
 ## Next step
 

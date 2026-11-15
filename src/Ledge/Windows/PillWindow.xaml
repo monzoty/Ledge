@@ -1,11 +1,12 @@
 <!--
   The overlay window (ADR-0003): one fixed-size, transparent, topmost window.
-  Everything outside the pill is fully transparent, so clicks pass through
-  to the app underneath.
+  Everything outside the hover zone is fully transparent, so clicks pass
+  through to the app underneath.
 -->
 <Window x:Class="Ledge.Windows.PillWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Ledge.Views"
         Title="{StaticResource AppName}"
         Width="{StaticResource OverlayWindowWidth}"
         Height="{StaticResource OverlayWindowHeight}"
@@ -19,34 +20,83 @@
         WindowStartupLocation="Manual"
         UseLayoutRounding="True">
 
-  <Grid>
-    <!-- Collapsed pill, "All clear" state (DESIGN.md §2) -->
-    <Border x:Name="Pill"
+  <!--
+    Hover zone (DESIGN.md §1): the shell plus an invisible margin.
+    It touches the top screen edge, so pushing the mouse up there opens it.
+    MouseEnter/MouseLeave on this one element drive open/close.
+  -->
+  <Border x:Name="HoverZone"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Top"
+          Padding="{StaticResource HoverZonePadding}"
+          Background="{StaticResource HoverHitBrush}"
+          MouseEnter="OnHoverZoneMouseEnter"
+          MouseLeave="OnHoverZoneMouseLeave">
+
+    <!--
+      The shell is ONE shape that morphs between pill and panel (DESIGN.md §4).
+      Width, Height, background colour and shadow are animated in
+      PillWindow.Animation.cs; these are the collapsed starting values.
+      Background is set in code (an animatable, non-shared brush).
+    -->
+    <Border x:Name="Shell"
             Width="{StaticResource PillWidth}"
             Height="{StaticResource PillHeight}"
-            Margin="{StaticResource PillTopOffset}"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             CornerRadius="{StaticResource PillCornerRadius}"
-            Background="{StaticResource PillBackgroundBrush}">
+            MouseLeftButtonDown="OnPillMouseLeftButtonDown"
+            PreviewMouseLeftButtonDown="OnPanelPreviewMouseLeftButtonDown">
+      <Border.Effect>
+        <DropShadowEffect x:Name="ShellShadow"
+                          BlurRadius="{StaticResource PanelShadowBlur}"
+                          ShadowDepth="{StaticResource PanelShadowOffsetY}"
+                          Direction="270"
+                          Color="{StaticResource PanelShadowColor}"
+                          Opacity="0" />
+      </Border.Effect>
 
-      <StackPanel Orientation="Horizontal"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
-        <TextBlock Text="{StaticResource GlyphCheckMark}"
-                   FontFamily="{StaticResource IconFont}"
-                   FontSize="{StaticResource PillIconSize}"
-                   Foreground="{StaticResource PillTextBrush}"
-                   VerticalAlignment="Center" />
-        <TextBlock Text="{StaticResource PillAllClear}"
-                   Margin="{StaticResource PillIconGap}"
-                   FontFamily="{StaticResource UiFont}"
-                   FontSize="{StaticResource PillTextSize}"
-                   FontWeight="SemiBold"
-                   Typography.NumeralAlignment="Tabular"
-                   Foreground="{StaticResource PillTextBrush}"
-                   VerticalAlignment="Center" />
-      </StackPanel>
+      <!-- Clips the content while the shell is smaller than it (mid-animation). -->
+      <Grid ClipToBounds="True">
+
+        <!-- Pill content, "All clear" state (DESIGN.md §2) -->
+        <StackPanel x:Name="PillContent"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+          <TextBlock Text="{StaticResource GlyphCheckMark}"
+                     FontFamily="{StaticResource IconFont}"
+                     FontSize="{StaticResource PillIconSize}"
+                     Foreground="{StaticResource PillTextBrush}"
+                     VerticalAlignment="Center" />
+          <TextBlock Text="{StaticResource PillAllClear}"
+                     Margin="{StaticResource PillIconGap}"
+                     FontFamily="{StaticResource UiFont}"
+                     FontSize="{StaticResource PillTextSize}"
+                     FontWeight="SemiBold"
+                     Typography.NumeralAlignment="Tabular"
+                     Foreground="{StaticResource PillTextBrush}"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!--
+          Panel content (DESIGN.md §2). Always laid out at full panel width so
+          nothing reflows while the shell grows; the Grid clips it meanwhile.
+          Only the quick-add box exists in M2.
+        -->
+        <Border x:Name="PanelContent"
+                Width="{StaticResource PanelWidth}"
+                Padding="{StaticResource PanelPadding}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Opacity="0"
+                Visibility="Collapsed">
+          <StackPanel>
+            <views:QuickAddBox x:Name="QuickAdd" />
+          </StackPanel>
+        </Border>
+
+      </Grid>
     </Border>
-  </Grid>
+  </Border>
 </Window>

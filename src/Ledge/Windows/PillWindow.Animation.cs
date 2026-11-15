@@ -1,0 +1,139 @@
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
+
+namespace Ledge.Windows;
+
+/// <summary>
+/// The pill ⇄ panel morph (DESIGN.md §4). Purely visual, so it lives in
+/// code-behind; it's in its own file to keep the focus logic readable.
+/// </summary>
+/// <remarks>
+/// WPF animation basics:
+/// <list type="bullet">
+/// <item>An animation (DoubleAnimation, ColorAnimation) changes ONE property over time.
+/// https://learn.microsoft.com/dotnet/desktop/wpf/graphics-multimedia/animation-overview</item>
+/// <item>BeginTime delays it, which gives us "width first, then height".</item>
+/// <item>Easing (CubicEase) makes motion start fast and settle, or the reverse.
+/// https://learn.microsoft.com/dotnet/desktop/wpf/graphics-multimedia/easing-functions</item>
+/// <item>We never set From: each animation starts at the property's CURRENT value,
+/// so reversing mid-way (close while opening) continues smoothly without a jump.</item>
+/// </list>
+/// </remarks>
+public sealed partial class PillWindow
+{
+    private static readonly IEasingFunction ExpandEasing = new CubicEase { EasingMode = EasingMode.EaseOut };
+    private static readonly IEasingFunction CollapseEasing = new CubicEase { EasingMode = EasingMode.EaseIn };
+
+    // Our own brush instance for the shell: brushes from resources are frozen
+    // (shared, read-only) and can't be animated.
+    private readonly SolidColorBrush _shellBrush = new();
+
+    private void InitializeAnimation()
+    {
+        _shellBrush.Color = BrushColor("PillBackgroundBrush");
+        Shell.Background = _shellBrush;
+    }
+
+    private void AnimateExpand()
+    {
+        var total = Duration("ExpandDuration");
+        var fadeDelay = Duration("ExpandContentFadeDelay");
+        var half = total / 2;
+
+        // Make the panel content measurable and switch to the panel's corner
+        // radius (at pill height both radii look identical, so no visible jump).
+        PanelContent.Visibility = Visibility.Visible;
+        Shell.CornerRadius = (CornerRadius)FindResource("PanelCornerRadius");
+
+        Animate(Shell, WidthProperty, Double("PanelWidth"), TimeSpan.Zero, half, ExpandEasing);
+        Animate(Shell, HeightProperty, PanelHeight(), half, half, ExpandEasing);
+        AnimateColor(BrushColor("BackgroundBrush"), total, ExpandEasing);
+        Animate(ShellShadow, DropShadowEffect.OpacityProperty, Double("PanelShadowOpacity"), TimeSpan.Zero, total, ExpandEasing);
+
+        Animate(PillContent, OpacityProperty, 0, TimeSpan.Zero, fadeDelay, ExpandEasing);
+        Animate(PanelContent, OpacityProperty, 1, fadeDelay, total - fadeDelay, ExpandEasing);
+    }
+
+    private void AnimateCollapse()
+    {
+        var total = Duration("CollapseDuration");
+        var fade = Duration("CollapseContentFadeDuration");
+        var sizeStep = (total - fade) / 2;
+
+        // Content fades out first, then height shrinks, then width.
+        Animate(PanelContent, OpacityProperty, 0, TimeSpan.Zero, fade, CollapseEasing);
+        Animate(Shell, HeightProperty, Double("PillHeight"), fade, sizeStep, CollapseEasing);
+        var widthDone = Animate(Shell, WidthProperty, Double("PillWidth"), fade + sizeStep, sizeStep, CollapseEasing);
+        AnimateColor(BrushColor("PillBackgroundBrush"), total, CollapseEasing);
+        Animate(ShellShadow, DropShadowEffect.OpacityProperty, 0, TimeSpan.Zero, total, CollapseEasing);
+        Animate(PillContent, OpacityProperty, 1, fade + sizeStep, sizeStep, CollapseEasing);
+
+        widthDone.Completed += (_, _) =>
+        {
+            // Re-opened before we finished? Then leave everything as it is.
+            if (IsExpanded)
+            {
+                return;
+            }
+
+            // Fully collapsed: hide the panel content so its text box can't
+            // keep keyboard focus or be tabbed into while invisible.
+            PanelContent.Visibility = Visibility.Collapsed;
+            Shell.CornerRadius = (CornerRadius)FindResource("PillCornerRadius");
+        };
+    }
+
+    /// <summary>
+    /// The panel's height for its current content: measured at full panel
+    /// width, then clamped to the min/max from DESIGN.md §2.
+    /// </summary>
+    private double PanelHeight()
+    {
+        PanelContent.Measure(new Size(Double("PanelWidth"), double.PositiveInfinity));
+        return Math.Clamp(PanelContent.DesiredSize.Height, Double("PanelMinHeight"), Double("PanelMaxHeight"));
+    }
+
+    /// <summary>
+    /// Starts one animation and returns it (so callers can listen for Completed).
+    /// IAnimatable covers both UI elements and effects like the shadow.
+    /// With Windows' "Show animations" turned off, the change is instant.
+    /// </summary>
+    private static AnimationTimeline Animate(
+        IAnimatable target,
+        DependencyProperty property,
+        double to,
+        TimeSpan beginTime,
+        TimeSpan duration,
+        IEasingFunction easing)
+    {
+        var animation = new DoubleAnimation(to, new Duration(Scale(duration)))
+        {
+            BeginTime = Scale(beginTime),
+            EasingFunction = easing,
+        };
+
+        target.BeginAnimation(property, animation);
+        return animation;
+    }
+
+    private void AnimateColor(Color to, TimeSpan duration, IEasingFunction easing)
+    {
+        var animation = new ColorAnimation(to, new Duration(Scale(duration))) { EasingFunction = easing };
+        _shellBrush.BeginAnimation(SolidColorBrush.ColorProperty, animation);
+    }
+
+    /// <summary>
+    /// Respects Windows Settings → Accessibility → Visual effects → Animation effects.
+    /// https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.clientareaanimation
+    /// </summary>
+    private static TimeSpan Scale(TimeSpan time) =>
+        SystemParameters.ClientAreaAnimation ? time : TimeSpan.Zero;
+
+    private TimeSpan Duration(string key) => (TimeSpan)FindResource(key);
+
+    private double Double(string key) => (double)FindResource(key);
+
+    private Color BrushColor(string key) => ((SolidColorBrush)FindResource(key)).Color;
+}
