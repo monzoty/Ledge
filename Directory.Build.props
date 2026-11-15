@@ -1,0 +1,15 @@
+<Project>
+  <!--
+    Shared settings for every project in this folder tree.
+    MSBuild automatically imports the nearest Directory.Build.props,
+    so these apply to src/ and tests/ without repeating them in each .csproj.
+    Docs: https://learn.microsoft.com/visualstudio/msbuild/customize-by-directory
+  -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Makes the code-style rules in .editorconfig run during `dotnet build`, not only in the editor. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>
