@@ -91,9 +91,25 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Opacity="0"
-                Visibility="Collapsed">
+                Visibility="Collapsed"
+                PreviewKeyDown="OnPanelPreviewKeyDown"
+                PreviewTextInput="OnPanelPreviewTextInput">
+          <!-- Ctrl+Z anywhere in the panel; a text box handles its own Ctrl+Z first. -->
+          <Border.InputBindings>
+            <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoDeleteCommand}" />
+          </Border.InputBindings>
           <DockPanel>
             <views:QuickAddBox x:Name="QuickAdd" DockPanel.Dock="Top" />
+            <!--
+              Undo hint (DESIGN.md §2): bottom of the panel, below the lists, one
+              row high. Docked outside the ScrollViewer so it's always in view.
+            -->
+            <Border x:Name="UndoHint"
+                    DockPanel.Dock="Bottom"
+                    Height="{StaticResource TaskRowHeight}"
+                    Visibility="{Binding ShowUndoHint, Converter={StaticResource BoolToVisibility}}">
+              <TextBlock Text="{StaticResource UndoDeleteHint}" Style="{StaticResource EmptyStateText}" />
+            </Border>
             <ScrollViewer Style="{StaticResource ThinScrollViewer}" Focusable="False">
               <!--
                 Inside a ScrollViewer, content gets unlimited height, so its

@@ -101,6 +101,21 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
   12 DIP gap after the title. On Today rows it's an inbox tray (tooltip
   "Move to Inbox"); on Inbox rows it's a calendar (tooltip "Move to Today").
   One click moves the task. The keyboard equivalent is `Ctrl+I` (§5).
+- **Delete action (mouse):** a 16 DIP trash icon also appears on hover, to the
+  **left** of the move icon with an **8 DIP** gap. It's `TextSecondary`, turns
+  `Danger` while the mouse is on it, and has the tooltip "Delete".
+- **Undo hint:** after a delete, the line "Task deleted · Ctrl+Z to undo"
+  appears at the **bottom of the panel**, below the lists: one row high (32),
+  `Small`, `TextSecondary`, 12 DIP in. It stays until you undo, the next
+  delete replaces it, or the panel closes (which also clears undo). It appears
+  and disappears instantly.
+- **Selected row (keyboard):** the 2 DIP `FocusRing` around the row (8 DIP
+  corners) **plus** the `Surface` background. It shows only when the row was
+  reached with the keyboard.
+- **Rename:** the title becomes a text box with the `Surface` background and
+  8 DIP corners, in the same font and position as the title, with all text
+  selected. Enter saves and Esc cancels. Clicking elsewhere or closing the
+  panel **saves**. An empty title keeps the old one.
 - **Growing while open:** when content changes the panel's height, it eases to
   the new height over **150 ms**, `QuadraticEase` EaseOut (same as the pill
   label change in §4).
@@ -204,6 +219,7 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Today empty | "Nothing on the ledge. Add a task above." |
 | Inbox empty | "Inbox is clear." |
 | Move action tooltips | "Move to Inbox" / "Move to Today" |
+| Delete action tooltip | "Delete" |
 | Pill, nothing open | "All clear" |
 | Pill, tasks open | "{n} today" |
 | Timer finished: title | "Focus session done" |

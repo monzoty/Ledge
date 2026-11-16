@@ -75,6 +75,15 @@
   <Thickness x:Key="EmptyStateMargin">12,0,12,0</Thickness>
   <!-- Hover move icon: 12 from the row's right edge (DESIGN.md §2 "Move action") -->
   <Thickness x:Key="TaskRowActionMargin">0,0,12,0</Thickness>
+  <!-- Hover trash icon: 8 to the left of the move icon (DESIGN.md §2 "Delete action") -->
+  <Thickness x:Key="TaskRowDeleteMargin">0,0,8,0</Thickness>
+  <!-- Keyboard focus ring (DESIGN.md §3): 2 DIP -->
+  <Thickness x:Key="FocusRingThickness">2</Thickness>
+  <!--
+    Delete (DESIGN.md §4): row height and opacity → 0 in 120 ms, QuadraticEase EaseIn.
+    Also read by App for the ViewModel, which waits for it before deleting.
+  -->
+  <Duration x:Key="TaskRemoveDuration">0:0:0.120</Duration>
   <!-- Inbox header chevron (DESIGN.md §2 "Inbox header"): 12 DIP, 4 DIP gap, turns 90° in 150 ms -->
   <sys:Double x:Key="ChevronIconSize">12</sys:Double>
   <Thickness x:Key="ChevronGap">0,0,4,0</Thickness>
@@ -123,6 +132,7 @@
   <!-- Move action (DESIGN.md §2): tray = to Inbox, calendar = to Today -->
   <sys:String x:Key="GlyphMoveToInbox">&#xE7B8;</sys:String>
   <sys:String x:Key="GlyphMoveToToday">&#xE787;</sys:String>
+  <sys:String x:Key="GlyphDelete">&#xE74D;</sys:String>
   <!-- Points right (▸); rotated 90° when the Inbox is open (▾) -->
   <sys:String x:Key="GlyphChevron">&#xE76C;</sys:String>
 

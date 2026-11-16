@@ -79,7 +79,10 @@ public sealed partial class App : Application
         var store = new JsonTaskStore(DataFolder, time);
         var loaded = await store.LoadAsync();
 
-        _host = BuildHost(time, store, loaded);
+        // Read after DisableXamlAnimationsIfTurnedOff, so it's 0 when animations are off.
+        var motion = new TaskListMotion(((Duration)FindResource("TaskRemoveDuration")).TimeSpan);
+
+        _host = BuildHost(time, store, loaded, motion);
         await _host.StartAsync();
 
         WatchForSaveFailures();
@@ -110,7 +113,7 @@ public sealed partial class App : Application
     /// The service registrations: "when a class asks for X, give it this".
     /// Singleton = one shared instance for the whole app.
     /// </summary>
-    private static IHost BuildHost(TimeProvider time, ITaskStore store, TaskLoadResult loaded)
+    private static IHost BuildHost(TimeProvider time, ITaskStore store, TaskLoadResult loaded, TaskListMotion motion)
     {
         // https://learn.microsoft.com/dotnet/core/extensions/generic-host
         var builder = Host.CreateApplicationBuilder();
@@ -130,6 +133,7 @@ public sealed partial class App : Application
         services.AddSingleton<DayRolloverService>();
 
         // ViewModels and windows
+        services.AddSingleton(motion);
         services.AddSingleton<TaskListViewModel>();
         services.AddSingleton<PillWindow>();
 
@@ -154,6 +158,7 @@ public sealed partial class App : Application
 
         Resources["TaskDoneDuration"] = new Duration(TimeSpan.Zero);
         Resources["InboxChevronDuration"] = new Duration(TimeSpan.Zero);
+        Resources["TaskRemoveDuration"] = new Duration(TimeSpan.Zero);
     }
 
     /// <summary>

@@ -7,8 +7,8 @@ using Ledge.Core.Services;
 namespace Ledge.ViewModels;
 
 /// <summary>
-/// What the panel's task area shows and can do: quick-add, the Today list and
-/// the collapsible Inbox. Delete/undo, rename and keyboard actions come in step 3d.
+/// What the panel's task area shows and can do: quick-add, the Today list,
+/// the collapsible Inbox, delete with undo, and rename.
 /// </summary>
 /// <remarks>
 /// MVVM: the View (XAML) binds to properties and commands here, and this
@@ -28,6 +28,7 @@ public sealed partial class TaskListViewModel : ObservableObject
 {
     private readonly TaskBoard _board;
     private readonly TimeProvider _time;
+    private readonly TaskListMotion _motion;
 
     [ObservableProperty]
     private string _quickAddText = string.Empty;
@@ -57,10 +58,22 @@ public sealed partial class TaskListViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ShowInboxEmpty))]
     private bool _isInboxEmpty = true;
 
-    public TaskListViewModel(TaskBoard board, TimeProvider time)
+    /// <summary>"Task deleted · Ctrl+Z to undo" is visible (DESIGN.md §2 "Undo hint").</summary>
+    [ObservableProperty]
+    private bool _showUndoHint;
+
+    /// <summary>
+    /// Some row's rename box is open. The window checks this so Esc cancels
+    /// the rename instead of closing the panel (DESIGN.md §5).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isRenaming;
+
+    public TaskListViewModel(TaskBoard board, TimeProvider time, TaskListMotion motion)
     {
         _board = board;
         _time = time;
+        _motion = motion;
 
         // Both live for the whole app (singletons), so this subscription never leaks.
         _board.Changed += (_, _) => Refresh();
@@ -99,6 +112,54 @@ public sealed partial class TaskListViewModel : ObservableObject
     }
 
     /// <summary>
+    /// The panel closed: forget the undo slot and hide the hint (PRD F3.4:
+    /// "undoes the most recent delete while the panel is open").
+    /// </summary>
+    public void ClearUndo()
+    {
+        _board.ClearUndo();
+        ShowUndoHint = false;
+    }
+
+    // --- Called by TaskRowViewModel ------------------------------------------
+
+    internal void Toggle(TaskRowViewModel row) => _board.Toggle(row.Id);
+
+    /// <summary>Today → Inbox, Inbox → Today. The row leaves one list and appears at the bottom of the other.</summary>
+    internal void Move(TaskRowViewModel row)
+    {
+        if (row.IsInInbox)
+        {
+            _board.MoveToToday(row.Id);
+        }
+        else
+        {
+            _board.MoveToInbox(row.Id);
+        }
+    }
+
+    /// <summary>
+    /// Plays the remove animation (the row's IsRemoving starts it in XAML), waits
+    /// for it, then deletes. Waiting with the injected TimeProvider keeps it testable.
+    /// </summary>
+    internal async Task DeleteAsync(TaskRowViewModel row)
+    {
+        row.IsRemoving = true;
+        await Task.Delay(_motion.RowRemoveDuration, _time);
+
+        if (_board.Delete(row.Id))
+        {
+            ShowUndoHint = true;
+        }
+    }
+
+    internal void Rename(TaskRowViewModel row, string newTitle) => _board.Rename(row.Id, newTitle);
+
+    internal void OnEditingChanged() => IsRenaming = Today.Concat(Inbox).Any(row => row.IsEditing);
+
+    // --- Commands ----------------------------------------------------------------
+
+    /// <summary>
     /// Enter in quick-add (PRD F3.1): add to Today, then clear the box so the
     /// next task can be typed straight away. Empty input does nothing (F3.2).
     /// </summary>
@@ -113,48 +174,26 @@ public sealed partial class TaskListViewModel : ObservableObject
         QuickAddText = string.Empty;
     }
 
-    /// <summary>Checkbox click (PRD F3.3). The board raises Changed, which refreshes the row.</summary>
+    /// <summary>Ctrl+Z: bring back the most recently deleted task (PRD F3.4).</summary>
     [RelayCommand]
-    private void Toggle(TaskRowViewModel? row)
+    private void UndoDelete()
     {
-        if (row is not null)
-        {
-            _board.Toggle(row.Id);
-        }
-    }
-
-    /// <summary>
-    /// The row's move icon (PRD F3.5): Today → Inbox, Inbox → Today. The row
-    /// leaves one list and appears at the bottom of the other.
-    /// </summary>
-    [RelayCommand]
-    private void Move(TaskRowViewModel? row)
-    {
-        if (row is null)
-        {
-            return;
-        }
-
-        if (row.IsInInbox)
-        {
-            _board.MoveToToday(row.Id);
-        }
-        else
-        {
-            _board.MoveToInbox(row.Id);
-        }
+        _board.UndoDelete();
+        ShowUndoHint = false;
     }
 
     /// <summary>Click on the "INBOX · n" header.</summary>
     [RelayCommand]
     private void ToggleInbox() => IsInboxExpanded = !IsInboxExpanded;
 
+    // --- Keeping the rows in step with the board --------------------------------
+
     /// <summary>
     /// Makes <paramref name="rows"/> match <paramref name="tasks"/> (same order)
     /// with the fewest changes: existing rows are updated and moved, new ones
     /// inserted, and leftovers removed from the end.
     /// </summary>
-    private static void Sync(ObservableCollection<TaskRowViewModel> rows, IReadOnlyList<TaskItem> tasks)
+    private void Sync(ObservableCollection<TaskRowViewModel> rows, IReadOnlyList<TaskItem> tasks)
     {
         for (var i = 0; i < tasks.Count; i++)
         {
@@ -163,7 +202,7 @@ public sealed partial class TaskListViewModel : ObservableObject
 
             if (existing < 0)
             {
-                rows.Insert(i, new TaskRowViewModel(task));
+                rows.Insert(i, new TaskRowViewModel(task, this));
                 continue;
             }
 

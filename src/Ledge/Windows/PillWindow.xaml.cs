@@ -72,6 +72,10 @@ public sealed partial class PillWindow : Window
         // the panel being opened after midnight. (A live midnight timer comes in 3c.)
         _tasks = tasks;
 
+        // The undo hint sits outside the scrolling list, so the list's SizeChanged
+        // doesn't see it appear or disappear; resize the panel for it too.
+        UndoHint.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
+
         _returnFocusTimer = new DispatcherTimer { Interval = ReturnFocusPollInterval };
         _returnFocusTimer.Tick += (_, _) => TryReturnFocus();
 
@@ -133,7 +137,9 @@ public sealed partial class PillWindow : Window
     {
         base.OnPreviewKeyDown(e);
 
-        if (e.Key == Key.Escape && IsExpanded)
+        // Esc: cancel a rename first (the rename box handles that itself),
+        // otherwise close the panel (DESIGN.md §5).
+        if (e.Key == Key.Escape && IsExpanded && !_tasks.IsRenaming)
         {
             e.Handled = true;
             CloseAndReturnFocus();
@@ -193,6 +199,9 @@ public sealed partial class PillWindow : Window
         {
             TakeFocus();
         }
+
+        // A click anywhere outside an open rename box saves it (DESIGN.md §2).
+        Views.RenameBox.CommitIfClickedOutside();
     }
 
     // --- Hotkey --------------------------------------------------------------
@@ -356,6 +365,9 @@ public sealed partial class PillWindow : Window
 
         _previousForeground = 0;
         WindowStyles.SetNoActivate(Handle, noActivate: true);
+
+        // Undo only works while the panel is open (PRD F3.4).
+        _tasks.ClearUndo();
     }
 
     // --- Placement -------------------------------------------------------------

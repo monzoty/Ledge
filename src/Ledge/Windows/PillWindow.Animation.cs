@@ -88,12 +88,18 @@ public sealed partial class PillWindow
     /// </summary>
     private void OnListContentSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (!e.HeightChanged || !IsExpanded || _isMorphing)
+        if (e.HeightChanged)
         {
-            return;
+            ResizeToContentIfOpen();
         }
+    }
 
-        AnimateToContentHeight();
+    private void ResizeToContentIfOpen()
+    {
+        if (IsExpanded && !_isMorphing)
+        {
+            AnimateToContentHeight();
+        }
     }
 
     private void AnimateToContentHeight()

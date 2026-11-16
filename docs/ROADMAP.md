@@ -78,8 +78,8 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] Core: `ITaskStore` + `JsonTaskStore` + `AtomicFile` (`File.Replace` with `.bak`, schema version)
 - [x] Unit tests: add / complete / delete / undo / move / rename, Today vs Inbox, rollover at midnight, title rules (trim, empty, 200 chars), crash mid-save, corrupt file → backup, both corrupt
 - [x] DI via the Generic Host; `TaskListViewModel` with `[ObservableProperty]` / `[RelayCommand]`
-- [ ] Quick-add, Today list, collapsible Inbox, checkbox, delete with Ctrl+Z undo
-- [ ] Keyboard: ↑/↓, Space, Del, F2, Ctrl+I, Ctrl+N or `/` (DESIGN.md §5)
+- [x] Quick-add, Today list, collapsible Inbox, checkbox, delete with Ctrl+Z undo
+- [x] Keyboard: ↑/↓, Space, Del, F2, Ctrl+I, Ctrl+N or `/` (DESIGN.md §5)
 - [ ] The pill shows "{n} today" / "All clear"
 - [ ] Empty states and copy from DESIGN.md §6
 - [ ] (Should) drag or Alt+↑/↓ reorder; can move to v0.2

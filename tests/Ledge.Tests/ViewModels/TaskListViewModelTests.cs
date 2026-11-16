@@ -6,6 +6,8 @@ namespace Ledge.Tests.ViewModels;
 
 public sealed class TaskListViewModelTests
 {
+    private static readonly TimeSpan RemoveDuration = TimeSpan.FromMilliseconds(120);
+
     // 16 Nov 2026, 10:00 UTC. The local zone stays UTC here: time-zone rules
     // are already covered by the Core tests.
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 11, 16, 10, 0, 0, TimeSpan.Zero));
@@ -15,10 +17,18 @@ public sealed class TaskListViewModelTests
     public TaskListViewModelTests()
     {
         _board = new TaskBoard(_time);
-        _viewModel = new TaskListViewModel(_board, _time);
+        _viewModel = CreateViewModel();
     }
 
     private IEnumerable<string> TodayTitles => _viewModel.Today.Select(row => row.Title);
+
+    private TaskListViewModel CreateViewModel() => new(_board, _time, new TaskListMotion(RemoveDuration));
+
+    private TaskRowViewModel AddRow(string title)
+    {
+        var task = _board.Add(title)!;
+        return _viewModel.Today.Single(row => row.Id == task.Id);
+    }
 
     // --- Start-up --------------------------------------------------------------
 
@@ -36,7 +46,7 @@ public sealed class TaskListViewModelTests
         _board.Add("One");
         _board.Add("Two");
 
-        var viewModel = new TaskListViewModel(_board, _time);
+        var viewModel = CreateViewModel();
 
         Assert.Equal(["One", "Two"], viewModel.Today.Select(row => row.Title));
         Assert.False(viewModel.IsTodayEmpty);
@@ -82,11 +92,10 @@ public sealed class TaskListViewModelTests
     [Fact]
     public void Toggle_MarksRowDone_AndUpdatesOpenCount()
     {
-        _board.Add("One");
-        _board.Add("Two");
-        var row = _viewModel.Today[0];
+        var row = AddRow("One");
+        AddRow("Two");
 
-        _viewModel.ToggleCommand.Execute(row);
+        row.ToggleCommand.Execute(null);
 
         Assert.True(row.IsDone);
         Assert.Equal(1, _viewModel.TodayOpenCount);
@@ -98,10 +107,9 @@ public sealed class TaskListViewModelTests
     {
         // The row must be updated in place, not replaced: that's what lets the
         // "done" animation play on the row that's already on screen.
-        _board.Add("Task");
-        var rowBefore = _viewModel.Today[0];
+        var rowBefore = AddRow("Task");
 
-        _viewModel.ToggleCommand.Execute(rowBefore);
+        rowBefore.ToggleCommand.Execute(null);
 
         Assert.Same(rowBefore, _viewModel.Today[0]);
     }
@@ -109,24 +117,13 @@ public sealed class TaskListViewModelTests
     [Fact]
     public void Toggle_RaisesPropertyChangedForIsDone()
     {
-        _board.Add("Task");
-        var row = _viewModel.Today[0];
+        var row = AddRow("Task");
         var changed = new List<string?>();
         row.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
 
-        _viewModel.ToggleCommand.Execute(row);
+        row.ToggleCommand.Execute(null);
 
         Assert.Equal([nameof(TaskRowViewModel.IsDone)], changed);
-    }
-
-    [Fact]
-    public void Toggle_WithNull_DoesNothing()
-    {
-        _board.Add("Task");
-
-        _viewModel.ToggleCommand.Execute(null);
-
-        Assert.False(_viewModel.Today[0].IsDone);
     }
 
     // --- Sync with the board ----------------------------------------------------
@@ -135,8 +132,7 @@ public sealed class TaskListViewModelTests
     public void RemovedTask_RemovesItsRow_KeepsOthers()
     {
         var a = _board.Add("A")!;
-        _board.Add("B");
-        var rowB = _viewModel.Today[1];
+        var rowB = AddRow("B");
 
         _board.Delete(a.Id);
 
@@ -145,42 +141,17 @@ public sealed class TaskListViewModelTests
     }
 
     [Fact]
-    public void RestoredTask_ReturnsToItsPosition()
-    {
-        _board.Add("A");
-        var b = _board.Add("B")!;
-        _board.Add("C");
-
-        _board.Delete(b.Id);
-        _board.UndoDelete();
-
-        Assert.Equal(["A", "B", "C"], TodayTitles);
-    }
-
-    [Fact]
     public void RenamedTask_UpdatesTitleInPlace()
     {
-        var task = _board.Add("Old")!;
-        var row = _viewModel.Today[0];
+        var row = AddRow("Old");
 
-        _board.Rename(task.Id, "New");
+        _board.Rename(row.Id, "New");
 
         Assert.Same(row, _viewModel.Today[0]);
         Assert.Equal("New", row.Title);
     }
 
-    [Fact]
-    public void TaskMovedToInbox_LeavesToday()
-    {
-        var task = _board.Add("Task")!;
-
-        _board.MoveToInbox(task.Id);
-
-        Assert.Empty(_viewModel.Today);
-        Assert.True(_viewModel.IsTodayEmpty);
-    }
-
-    // --- Inbox ------------------------------------------------------------------
+    // --- Inbox and move ---------------------------------------------------------
 
     [Fact]
     public void Inbox_StartsCollapsedAndEmpty()
@@ -212,10 +183,10 @@ public sealed class TaskListViewModelTests
     {
         var inboxTask = _board.Add("Already in inbox")!;
         _board.MoveToInbox(inboxTask.Id);
-        _board.Add("Stay");
-        _board.Add("Go");
+        AddRow("Stay");
+        var go = AddRow("Go");
 
-        _viewModel.MoveCommand.Execute(_viewModel.Today.Single(row => row.Title == "Go"));
+        go.MoveCommand.Execute(null);
 
         Assert.Equal(["Stay"], TodayTitles);
         Assert.Equal(["Already in inbox", "Go"], _viewModel.Inbox.Select(row => row.Title));
@@ -230,22 +201,11 @@ public sealed class TaskListViewModelTests
         var task = _board.Add("Task")!;
         _board.MoveToInbox(task.Id);
 
-        _viewModel.MoveCommand.Execute(_viewModel.Inbox[0]);
+        _viewModel.Inbox[0].MoveCommand.Execute(null);
 
         Assert.Equal(["Task"], TodayTitles);
         Assert.False(_viewModel.Today[0].IsInInbox);
-        Assert.Empty(_viewModel.Inbox);
         Assert.True(_viewModel.IsInboxEmpty);
-    }
-
-    [Fact]
-    public void Move_WithNull_DoesNothing()
-    {
-        _board.Add("Task");
-
-        _viewModel.MoveCommand.Execute(null);
-
-        Assert.Single(_viewModel.Today);
     }
 
     [Fact]
@@ -260,6 +220,158 @@ public sealed class TaskListViewModelTests
 
         Assert.Equal(2, _viewModel.Inbox.Count); // done stays visible today
         Assert.Equal(1, _viewModel.InboxOpenCount);
+    }
+
+    // --- Delete and undo --------------------------------------------------------
+
+    [Fact]
+    public void Delete_PlaysAnimationFirst_ThenRemovesRow()
+    {
+        var row = AddRow("Task");
+
+        var deleting = row.DeleteCommand.ExecuteAsync(null);
+
+        // During the 120 ms animation the row is still there, marked as removing.
+        Assert.True(row.IsRemoving);
+        Assert.Single(_viewModel.Today);
+        Assert.False(_viewModel.ShowUndoHint);
+
+        _time.Advance(RemoveDuration);
+        Assert.True(deleting.IsCompleted);
+
+        Assert.Empty(_viewModel.Today);
+        Assert.True(_viewModel.ShowUndoHint);
+    }
+
+    [Fact]
+    public void RowBeingRemoved_IgnoresOtherCommands()
+    {
+        var row = AddRow("Task");
+
+        var deleting = row.DeleteCommand.ExecuteAsync(null);
+
+        Assert.False(row.ToggleCommand.CanExecute(null));
+        Assert.False(row.MoveCommand.CanExecute(null));
+        Assert.False(row.BeginRenameCommand.CanExecute(null));
+
+        // Let the delete finish: xUnit waits for unfinished async work at the end
+        // of a test, so leaving the fake clock stopped here would hang the run.
+        _time.Advance(RemoveDuration);
+        Assert.True(deleting.IsCompleted);
+    }
+
+    [Fact]
+    public void UndoDelete_RestoresTask_AndHidesHint()
+    {
+        AddRow("A");
+        var b = AddRow("B");
+        AddRow("C");
+        _ = b.DeleteCommand.ExecuteAsync(null);
+        _time.Advance(RemoveDuration);
+
+        _viewModel.UndoDeleteCommand.Execute(null);
+
+        Assert.Equal(["A", "B", "C"], TodayTitles);
+        Assert.False(_viewModel.ShowUndoHint);
+        Assert.False(_viewModel.Today[1].IsRemoving); // a fresh row, not the faded one
+    }
+
+    [Fact]
+    public void ClearUndo_HidesHint_AndUndoDoesNothing()
+    {
+        var row = AddRow("Task");
+        _ = row.DeleteCommand.ExecuteAsync(null);
+        _time.Advance(RemoveDuration);
+
+        _viewModel.ClearUndo();
+        _viewModel.UndoDeleteCommand.Execute(null);
+
+        Assert.False(_viewModel.ShowUndoHint);
+        Assert.Empty(_viewModel.Today);
+    }
+
+    // --- Rename -------------------------------------------------------------------
+
+    [Fact]
+    public void BeginRename_OpensBoxWithCurrentTitle()
+    {
+        var row = AddRow("Email Priya");
+
+        row.BeginRenameCommand.Execute(null);
+
+        Assert.True(row.IsEditing);
+        Assert.Equal("Email Priya", row.EditText);
+        Assert.True(_viewModel.IsRenaming);
+    }
+
+    [Fact]
+    public void CommitRename_SavesNormalizedTitle()
+    {
+        var row = AddRow("Old");
+        row.BeginRenameCommand.Execute(null);
+        row.EditText = "  New title ";
+
+        row.CommitRenameCommand.Execute(null);
+
+        Assert.False(row.IsEditing);
+        Assert.False(_viewModel.IsRenaming);
+        Assert.Equal("New title", row.Title);
+    }
+
+    [Fact]
+    public void CommitRename_WithEmptyText_KeepsOldTitle()
+    {
+        var row = AddRow("Old");
+        row.BeginRenameCommand.Execute(null);
+        row.EditText = "   ";
+
+        row.CommitRenameCommand.Execute(null);
+
+        Assert.False(row.IsEditing);
+        Assert.Equal("Old", row.Title);
+    }
+
+    [Fact]
+    public void CancelRename_KeepsOldTitle()
+    {
+        var row = AddRow("Old");
+        row.BeginRenameCommand.Execute(null);
+        row.EditText = "Something else";
+
+        row.CancelRenameCommand.Execute(null);
+
+        Assert.False(row.IsEditing);
+        Assert.False(_viewModel.IsRenaming);
+        Assert.Equal("Old", row.Title);
+    }
+
+    [Fact]
+    public void CommitAfterCancel_DoesNothing()
+    {
+        // Esc closes the box; the box then loses focus, which also commits.
+        // That second call must not save the abandoned text.
+        var row = AddRow("Old");
+        row.BeginRenameCommand.Execute(null);
+        row.EditText = "Abandoned";
+
+        row.CancelRenameCommand.Execute(null);
+        row.CommitRenameCommand.Execute(null);
+
+        Assert.Equal("Old", row.Title);
+    }
+
+    [Fact]
+    public void WhileRenaming_RowShortcutsAreDisabled()
+    {
+        // So typing a space in the rename box doesn't also tick the task.
+        var row = AddRow("Task");
+
+        row.BeginRenameCommand.Execute(null);
+
+        Assert.False(row.ToggleCommand.CanExecute(null));
+        Assert.False(row.DeleteCommand.CanExecute(null));
+        Assert.False(row.MoveCommand.CanExecute(null));
+        Assert.False(row.BeginRenameCommand.CanExecute(null));
     }
 
     // --- Day change -------------------------------------------------------------
