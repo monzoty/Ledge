@@ -159,9 +159,18 @@ a query.
 - `SchemaVersion` lets future versions migrate old files.
 - Saves happen on every change, debounced to about 300 ms, and are flushed
   on Quit and on Windows shutdown (`SessionEnding`).
-- Load order: `tasks.json` → if corrupt, `tasks.json.bak` → if that's also
-  corrupt, start empty. Bad files are never deleted; they're renamed to
-  `*.corrupt-<timestamp>.json`.
+- Load order: `tasks.json` → if unusable, `tasks.json.bak` → if that's also
+  unusable, start empty. `LoadAsync` returns a `TaskLoadOutcome` (`Loaded`,
+  `FirstRun`, `RestoredFromBackup` or `ResetAfterCorruption`) so the UI can tell the user.
+- "Unusable" means broken JSON, missing required fields, a `null` task list, or a
+  `schemaVersion` outside 1…current. A file written by a **newer** Ledge is
+  therefore set aside, never loaded and overwritten. Errors like "access denied"
+  are thrown, not treated as corruption.
+- Bad files are never deleted. They're renamed to `tasks.corrupt-<yyyyMMdd-HHmmss>.json`
+  or `tasks.bak.corrupt-<…>.json`, with `-2`, `-3`, … added if the name is taken.
+- `AtomicFile` flushes the temp file to disk (`Flush(true)`) before swapping it in.
+  Core I/O uses `ConfigureAwait(false)`, so its work never runs on the UI thread.
+  Only one save runs at a time (`SemaphoreSlim`).
 
 ## 6. The overlay window: key techniques
 

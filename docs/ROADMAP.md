@@ -75,8 +75,8 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 **Goal:** real tasks that are saved. [F2.7, F3.*, US6]
 
 - [x] Core: `TaskItem`, `TaskDocument`, `TaskBoard`, `TaskQueries`
-- [ ] Core: `ITaskStore` + `JsonTaskStore` + `AtomicFile` (`File.Replace` with `.bak`, schema version)
-- [ ] Unit tests: add / complete / delete / undo / move / rename, Today vs Inbox, rollover at midnight, title rules (trim, empty, 200 chars), crash mid-save, corrupt file → backup, both corrupt
+- [x] Core: `ITaskStore` + `JsonTaskStore` + `AtomicFile` (`File.Replace` with `.bak`, schema version)
+- [x] Unit tests: add / complete / delete / undo / move / rename, Today vs Inbox, rollover at midnight, title rules (trim, empty, 200 chars), crash mid-save, corrupt file → backup, both corrupt
 - [ ] DI via the Generic Host; `TaskListViewModel` with `[ObservableProperty]` / `[RelayCommand]`
 - [ ] Quick-add, Today list, collapsible Inbox, checkbox, delete with Ctrl+Z undo
 - [ ] Keyboard: ↑/↓, Space, Del, F2, Ctrl+I, Ctrl+N or `/` (DESIGN.md §5)
