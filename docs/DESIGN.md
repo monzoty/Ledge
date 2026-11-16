@@ -54,7 +54,7 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
 
 | State | Size (w × h) | What's shown |
 |---|---|---|
-| Collapsed (idle, tasks open) | **112 × 28** | Small amber dot + "**3 today**" (count of open tasks in Today) |
+| Collapsed (idle, tasks open) | **112 × 28** | Small amber dot (**6 DIP** circle, `Accent`, 4 DIP gap to the text) + "**3 today**" (count of open tasks in Today) |
 | Collapsed (idle, nothing open) | **112 × 28** | Check icon + "**All clear**" |
 | Collapsed (timer running) | **136 × 28** | Ring icon showing progress + "**18:42**" (tabular digits); when paused, a pause icon replaces the ring and the text dims to secondary |
 | Peek (hover) | — | **None in v0.1.** Hover goes straight to Expanded. Simpler, and one fewer state to tune. |
@@ -116,6 +116,11 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
   8 DIP corners, in the same font and position as the title, with all text
   selected. Enter saves and Esc cancels. Clicking elsewhere or closing the
   panel **saves**. An empty title keeps the old one.
+- **Data notice** (task file restored or reset): a line at the **bottom of
+  the panel**, where the undo hint goes, in `Small` text in `Danger`. It wraps
+  to as many lines as it needs, at least one row high (32), 12 DIP in. It shows
+  the first time the panel opens after start-up and disappears when the panel
+  closes.
 - **Growing while open:** when content changes the panel's height, it eases to
   the new height over **150 ms**, `QuadraticEase` EaseOut (same as the pill
   label change in §4).
@@ -167,7 +172,7 @@ image files are needed. Size 16 in the panel, 12 in the pill.
 |---|---|---|---|
 | Expand | Pill grows in width, then height, into the panel (anchored top-centre); content fades in from 0 to 1, starting 60 ms later | **220 ms** | `CubicEase`, EaseOut |
 | Collapse | Reverse: content fades out first, then the size shrinks | **160 ms** | `CubicEase`, EaseIn |
-| Pill label change (count ↔ timer) | Crossfade, width animates | 150 ms | `QuadraticEase`, EaseOut |
+| Pill label change (count ↔ timer, and "All clear" ↔ "{n} today") | Crossfade, width animates if it changes. A number changing (3 → 2) is instant. | 150 ms | `QuadraticEase`, EaseOut |
 | Task completed | Check fills with `Success`, strikethrough appears, row opacity drops to 60 % | **150 ms** | `QuadraticEase`, EaseOut |
 | Task deleted | Row height and opacity go to 0 | 120 ms | `QuadraticEase`, EaseIn |
 | Timer finished | Pill border pulses `Accent` twice (opacity 0 → 1 → 0) | 2 × 600 ms | `SineEase`, EaseInOut |
@@ -229,6 +234,7 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Replace running timer | "Stop the current session and start a new one?" · buttons "Start new" / "Keep current" |
 | Hotkey taken | "{hotkey} is already used by another app. Pick a different shortcut in Settings." |
 | Data restored from backup | "Your task file couldn't be read, so Ledge restored the last backup." |
+| Data reset (file and backup unreadable) | "Your task file and its backup couldn't be read, so Ledge started with an empty list. The damaged files were kept in the Ledge data folder." |
 | Undo delete hint | "Task deleted · Ctrl+Z to undo" |
 
 ## 7. Inspiration board

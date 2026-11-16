@@ -19,6 +19,10 @@
   <sys:Double x:Key="PillHoverMargin">8</sys:Double>
   <!-- Gap between pill icon and label: one SpacingUnit -->
   <Thickness x:Key="PillIconGap">4,0,0,0</Thickness>
+  <!-- "3 today" status dot (DESIGN.md §2): 6 DIP Accent circle, same 4 DIP gap -->
+  <sys:Double x:Key="PillDotSize">6</sys:Double>
+  <!-- "All clear" ↔ "n today" crossfade (DESIGN.md §4). Set to 0 by App when animations are off. -->
+  <Duration x:Key="PillLabelDuration">0:0:0.150</Duration>
 
   <!--
     Hover zone (DESIGN.md §1). Derived: PillHoverMargin (8) on left, right and

@@ -75,6 +75,10 @@ public sealed partial class PillWindow : Window
         // The undo hint sits outside the scrolling list, so the list's SizeChanged
         // doesn't see it appear or disappear; resize the panel for it too.
         UndoHint.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
+        DataNotice.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
+
+        // The pill's "n today" / "All clear" reads the same ViewModel.
+        PillContent.DataContext = tasks;
 
         _returnFocusTimer = new DispatcherTimer { Interval = ReturnFocusPollInterval };
         _returnFocusTimer.Tick += (_, _) => TryReturnFocus();
@@ -366,8 +370,8 @@ public sealed partial class PillWindow : Window
         _previousForeground = 0;
         WindowStyles.SetNoActivate(Handle, noActivate: true);
 
-        // Undo only works while the panel is open (PRD F3.4).
-        _tasks.ClearUndo();
+        // Undo only works while the panel is open (PRD F3.4); notices are seen once.
+        _tasks.OnPanelClosed();
     }
 
     // --- Placement -------------------------------------------------------------

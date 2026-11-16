@@ -1,3 +1,4 @@
+using Ledge.Core.Models;
 using Ledge.Core.Services;
 using Ledge.ViewModels;
 using Microsoft.Extensions.Time.Testing;
@@ -22,7 +23,8 @@ public sealed class TaskListViewModelTests
 
     private IEnumerable<string> TodayTitles => _viewModel.Today.Select(row => row.Title);
 
-    private TaskListViewModel CreateViewModel() => new(_board, _time, new TaskListMotion(RemoveDuration));
+    private TaskListViewModel CreateViewModel(TaskLoadOutcome outcome = TaskLoadOutcome.Loaded) =>
+        new(_board, _time, new TaskListMotion(RemoveDuration), new TaskLoadResult(_board.Document, outcome));
 
     private TaskRowViewModel AddRow(string title)
     {
@@ -372,6 +374,93 @@ public sealed class TaskListViewModelTests
         Assert.False(row.DeleteCommand.CanExecute(null));
         Assert.False(row.MoveCommand.CanExecute(null));
         Assert.False(row.BeginRenameCommand.CanExecute(null));
+    }
+
+    // --- Pill label -------------------------------------------------------------
+
+    [Fact]
+    public void HasOpenToday_FollowsOpenCount()
+    {
+        Assert.False(_viewModel.HasOpenToday); // "All clear"
+
+        var row = AddRow("Task");
+        Assert.True(_viewModel.HasOpenToday); // "1 today"
+
+        row.ToggleCommand.Execute(null);
+        Assert.False(_viewModel.HasOpenToday); // last one done: "All clear" again
+    }
+
+    [Fact]
+    public void HasOpenToday_IsAnnouncedWhenItChanges()
+    {
+        var changed = new List<string?>();
+        _viewModel.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        AddRow("Task");
+
+        Assert.Contains(nameof(TaskListViewModel.HasOpenToday), changed);
+    }
+
+    [Fact]
+    public void InboxTasks_DoNotCountForThePill()
+    {
+        var task = _board.Add("Task")!;
+
+        _board.MoveToInbox(task.Id);
+
+        Assert.False(_viewModel.HasOpenToday);
+    }
+
+    // --- Data notices -------------------------------------------------------------
+
+    [Fact]
+    public void NormalLoad_ShowsNoNotice()
+    {
+        Assert.False(_viewModel.ShowDataNotice);
+        Assert.False(_viewModel.ShowRestoredNotice);
+        Assert.False(_viewModel.ShowResetNotice);
+    }
+
+    [Fact]
+    public void RestoredFromBackup_ShowsRestoredNotice()
+    {
+        var viewModel = CreateViewModel(TaskLoadOutcome.RestoredFromBackup);
+
+        Assert.True(viewModel.ShowDataNotice);
+        Assert.True(viewModel.ShowRestoredNotice);
+        Assert.False(viewModel.ShowResetNotice);
+    }
+
+    [Fact]
+    public void ResetAfterCorruption_ShowsResetNotice()
+    {
+        var viewModel = CreateViewModel(TaskLoadOutcome.ResetAfterCorruption);
+
+        Assert.True(viewModel.ShowDataNotice);
+        Assert.False(viewModel.ShowRestoredNotice);
+        Assert.True(viewModel.ShowResetNotice);
+    }
+
+    [Fact]
+    public void FirstRun_ShowsNoNotice()
+    {
+        Assert.False(CreateViewModel(TaskLoadOutcome.FirstRun).ShowDataNotice);
+    }
+
+    [Fact]
+    public void OnPanelClosed_HidesNotice_AndClearsUndo()
+    {
+        var viewModel = CreateViewModel(TaskLoadOutcome.RestoredFromBackup);
+        _board.Add("Task");
+        _ = viewModel.Today[0].DeleteCommand.ExecuteAsync(null);
+        _time.Advance(RemoveDuration);
+        Assert.True(viewModel.ShowUndoHint);
+
+        viewModel.OnPanelClosed();
+
+        Assert.False(viewModel.ShowDataNotice);
+        Assert.False(viewModel.ShowUndoHint);
+        Assert.False(_board.CanUndoDelete);
     }
 
     // --- Day change -------------------------------------------------------------

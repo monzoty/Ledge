@@ -33,9 +33,23 @@ public sealed partial class TaskListViewModel : ObservableObject
     [ObservableProperty]
     private string _quickAddText = string.Empty;
 
-    /// <summary>Open tasks in Today: the number in "TODAY · n" (DESIGN.md §2).</summary>
+    /// <summary>Open tasks in Today: the number in "TODAY · n" and in the pill's "n today" (DESIGN.md §2).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasOpenToday))]
     private int _todayOpenCount;
+
+    /// <summary>
+    /// The task file couldn't be read and the backup was loaded (DESIGN.md §6).
+    /// Shown until the panel closes for the first time.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowDataNotice))]
+    private bool _showRestoredNotice;
+
+    /// <summary>Neither the file nor the backup could be read; Ledge started empty.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowDataNotice))]
+    private bool _showResetNotice;
 
     /// <summary>True when Today has no rows at all; shows the empty-state text.</summary>
     [ObservableProperty]
@@ -69,11 +83,14 @@ public sealed partial class TaskListViewModel : ObservableObject
     [ObservableProperty]
     private bool _isRenaming;
 
-    public TaskListViewModel(TaskBoard board, TimeProvider time, TaskListMotion motion)
+    public TaskListViewModel(TaskBoard board, TimeProvider time, TaskListMotion motion, TaskLoadResult loaded)
     {
         _board = board;
         _time = time;
         _motion = motion;
+
+        ShowRestoredNotice = loaded.Outcome == TaskLoadOutcome.RestoredFromBackup;
+        ShowResetNotice = loaded.Outcome == TaskLoadOutcome.ResetAfterCorruption;
 
         // Both live for the whole app (singletons), so this subscription never leaks.
         _board.Changed += (_, _) => Refresh();
@@ -92,6 +109,12 @@ public sealed partial class TaskListViewModel : ObservableObject
 
     /// <summary>"Inbox is clear." shows only when the Inbox is open AND empty.</summary>
     public bool ShowInboxEmpty => IsInboxExpanded && IsInboxEmpty;
+
+    /// <summary>The pill shows "n today" with the amber dot; otherwise "All clear" (DESIGN.md §2).</summary>
+    public bool HasOpenToday => TodayOpenCount > 0;
+
+    /// <summary>Either data notice is showing (the line at the bottom of the panel).</summary>
+    public bool ShowDataNotice => ShowRestoredNotice || ShowResetNotice;
 
     /// <summary>
     /// Re-reads the lists from the board. Rows are matched by task Id and
@@ -119,6 +142,17 @@ public sealed partial class TaskListViewModel : ObservableObject
     {
         _board.ClearUndo();
         ShowUndoHint = false;
+    }
+
+    /// <summary>
+    /// The panel closed: undo ends, and a data notice has now been seen once
+    /// (DESIGN.md §2 "Data notice").
+    /// </summary>
+    public void OnPanelClosed()
+    {
+        ClearUndo();
+        ShowRestoredNotice = false;
+        ShowResetNotice = false;
     }
 
     // --- Called by TaskRowViewModel ------------------------------------------

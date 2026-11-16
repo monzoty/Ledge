@@ -80,8 +80,8 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] DI via the Generic Host; `TaskListViewModel` with `[ObservableProperty]` / `[RelayCommand]`
 - [x] Quick-add, Today list, collapsible Inbox, checkbox, delete with Ctrl+Z undo
 - [x] Keyboard: ↑/↓, Space, Del, F2, Ctrl+I, Ctrl+N or `/` (DESIGN.md §5)
-- [ ] The pill shows "{n} today" / "All clear"
-- [ ] Empty states and copy from DESIGN.md §6
+- [x] The pill shows "{n} today" / "All clear"
+- [x] Empty states and copy from DESIGN.md §6 (plus the restored/reset data notice)
 - [ ] (Should) drag or Alt+↑/↓ reorder; can move to v0.2
 
 **Done when:** tasks survive a restart; all Core tests pass.

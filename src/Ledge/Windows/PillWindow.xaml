@@ -59,25 +59,98 @@
       <!-- Clips the content while the shell is smaller than it (mid-animation). -->
       <Grid ClipToBounds="True">
 
-        <!-- Pill content, "All clear" state (DESIGN.md §2) -->
-        <StackPanel x:Name="PillContent"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-          <TextBlock Text="{StaticResource GlyphCheckMark}"
-                     FontFamily="{StaticResource IconFont}"
-                     FontSize="{StaticResource PillIconSize}"
-                     Foreground="{StaticResource PillTextBrush}"
+        <!--
+          Pill content (DESIGN.md §2): "✓ All clear" or "• 3 today". Both labels
+          are stacked in one cell and cross-fade (DESIGN.md §4, 150 ms) when
+          HasOpenToday flips; a changing number (3 → 2) just updates the text.
+          The whole Grid fades out when the panel opens (PillWindow.Animation.cs).
+          DataContext: TaskListViewModel (code-behind).
+        -->
+        <Grid x:Name="PillContent" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Grid.Resources>
+            <Style x:Key="PillLabel" TargetType="TextBlock">
+              <Setter Property="Margin" Value="{StaticResource PillIconGap}" />
+              <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+              <Setter Property="FontSize" Value="{StaticResource PillTextSize}" />
+              <Setter Property="FontWeight" Value="SemiBold" />
+              <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
+              <Setter Property="Foreground" Value="{StaticResource PillTextBrush}" />
+              <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+          </Grid.Resources>
+
+          <!-- "All clear": visible unless there are open tasks. -->
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel.Style>
+              <Style TargetType="StackPanel">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding HasOpenToday}" Value="True">
+                    <DataTrigger.EnterActions>
+                      <BeginStoryboard>
+                        <Storyboard>
+                          <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0"
+                                           Duration="{StaticResource PillLabelDuration}"
+                                           EasingFunction="{StaticResource QuadraticEaseOut}" />
+                        </Storyboard>
+                      </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                      <BeginStoryboard>
+                        <Storyboard>
+                          <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1"
+                                           Duration="{StaticResource PillLabelDuration}"
+                                           EasingFunction="{StaticResource QuadraticEaseOut}" />
+                        </Storyboard>
+                      </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </StackPanel.Style>
+            <TextBlock Text="{StaticResource GlyphCheckMark}"
+                       FontFamily="{StaticResource IconFont}"
+                       FontSize="{StaticResource PillIconSize}"
+                       Foreground="{StaticResource PillTextBrush}"
+                       VerticalAlignment="Center" />
+            <TextBlock Text="{StaticResource PillAllClear}" Style="{StaticResource PillLabel}" />
+          </StackPanel>
+
+          <!-- "• 3 today": starts hidden, fades in while there are open tasks. -->
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Opacity="0">
+            <StackPanel.Style>
+              <Style TargetType="StackPanel">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding HasOpenToday}" Value="True">
+                    <DataTrigger.EnterActions>
+                      <BeginStoryboard>
+                        <Storyboard>
+                          <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1"
+                                           Duration="{StaticResource PillLabelDuration}"
+                                           EasingFunction="{StaticResource QuadraticEaseOut}" />
+                        </Storyboard>
+                      </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                      <BeginStoryboard>
+                        <Storyboard>
+                          <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0"
+                                           Duration="{StaticResource PillLabelDuration}"
+                                           EasingFunction="{StaticResource QuadraticEaseOut}" />
+                        </Storyboard>
+                      </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </StackPanel.Style>
+            <Ellipse Width="{StaticResource PillDotSize}"
+                     Height="{StaticResource PillDotSize}"
+                     Fill="{StaticResource AccentBrush}"
                      VerticalAlignment="Center" />
-          <TextBlock Text="{StaticResource PillAllClear}"
-                     Margin="{StaticResource PillIconGap}"
-                     FontFamily="{StaticResource UiFont}"
-                     FontSize="{StaticResource PillTextSize}"
-                     FontWeight="SemiBold"
-                     Typography.NumeralAlignment="Tabular"
-                     Foreground="{StaticResource PillTextBrush}"
-                     VerticalAlignment="Center" />
-        </StackPanel>
+            <TextBlock Text="{Binding TodayOpenCount, StringFormat={StaticResource PillTodayFormat}}"
+                       Style="{StaticResource PillLabel}" />
+          </StackPanel>
+        </Grid>
 
         <!--
           Panel content (DESIGN.md §2). Always laid out at full panel width so
@@ -104,6 +177,28 @@
               Undo hint (DESIGN.md §2): bottom of the panel, below the lists, one
               row high. Docked outside the ScrollViewer so it's always in view.
             -->
+            <!--
+              Data notice (DESIGN.md §2, §6): Small, Danger, wraps; at least one
+              row high. Shown once, until the panel first closes. Only one of the
+              two texts is ever visible.
+            -->
+            <Border x:Name="DataNotice"
+                    DockPanel.Dock="Bottom"
+                    MinHeight="{StaticResource TaskRowHeight}"
+                    Visibility="{Binding ShowDataNotice, Converter={StaticResource BoolToVisibility}}">
+              <Grid VerticalAlignment="Center">
+                <TextBlock Text="{StaticResource DataRestoredNotice}"
+                           Style="{StaticResource EmptyStateText}"
+                           Foreground="{StaticResource DangerBrush}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding ShowRestoredNotice, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{StaticResource DataResetNotice}"
+                           Style="{StaticResource EmptyStateText}"
+                           Foreground="{StaticResource DangerBrush}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding ShowResetNotice, Converter={StaticResource BoolToVisibility}}" />
+              </Grid>
+            </Border>
             <Border x:Name="UndoHint"
                     DockPanel.Dock="Bottom"
                     Height="{StaticResource TaskRowHeight}"

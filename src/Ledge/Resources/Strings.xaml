@@ -8,6 +8,8 @@
 
   <sys:String x:Key="AppName">Ledge</sys:String>
   <sys:String x:Key="PillAllClear">All clear</sys:String>
+  <!-- {0} = number of open tasks in Today -->
+  <sys:String x:Key="PillTodayFormat">{0} today</sys:String>
   <sys:String x:Key="QuickAddPlaceholder">Add a task…</sys:String>
   <!-- Section headers: shown UPPERCASE by the Caption style, e.g. "TODAY · 2" (DESIGN.md §2) -->
   <sys:String x:Key="SectionToday">Today</sys:String>
@@ -20,6 +22,9 @@
   <sys:String x:Key="MoveToToday">Move to Today</sys:String>
   <sys:String x:Key="DeleteTask">Delete</sys:String>
   <sys:String x:Key="UndoDeleteHint">Task deleted · Ctrl+Z to undo</sys:String>
+  <!-- Data notices (DESIGN.md §6) -->
+  <sys:String x:Key="DataRestoredNotice">Your task file couldn't be read, so Ledge restored the last backup.</sys:String>
+  <sys:String x:Key="DataResetNotice">Your task file and its backup couldn't be read, so Ledge started with an empty list. The damaged files were kept in the Ledge data folder.</sys:String>
   <!-- {0} = the shortcut, e.g. "Win+Alt+L" -->
   <sys:String x:Key="HotkeyTakenMessage">{0} is already used by another app. Pick a different shortcut in Settings.</sys:String>
 

@@ -159,6 +159,7 @@ public sealed partial class App : Application
         Resources["TaskDoneDuration"] = new Duration(TimeSpan.Zero);
         Resources["InboxChevronDuration"] = new Duration(TimeSpan.Zero);
         Resources["TaskRemoveDuration"] = new Duration(TimeSpan.Zero);
+        Resources["PillLabelDuration"] = new Duration(TimeSpan.Zero);
     }
 
     /// <summary>
