@@ -7,7 +7,7 @@
 Branch naming: `m1-overlay-window`, `m2-hotkey-and-expand`, …
 Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 
-**Current milestone: M2**
+**Current milestone: M3**
 
 ---
 
@@ -74,7 +74,7 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 ## M3 — Tasks + storage (MVVM + tests)
 **Goal:** real tasks that are saved. [F2.7, F3.*, US6]
 
-- [ ] Core: `TaskItem`, `TaskDocument`, `TaskBoard`, `TaskQueries`
+- [x] Core: `TaskItem`, `TaskDocument`, `TaskBoard`, `TaskQueries`
 - [ ] Core: `ITaskStore` + `JsonTaskStore` + `AtomicFile` (`File.Replace` with `.bak`, schema version)
 - [ ] Unit tests: add / complete / delete / undo / move / rename, Today vs Inbox, rollover at midnight, title rules (trim, empty, 200 chars), crash mid-save, corrupt file → backup, both corrupt
 - [ ] DI via the Generic Host; `TaskListViewModel` with `[ObservableProperty]` / `[RelayCommand]`

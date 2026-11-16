@@ -92,9 +92,12 @@ project.
 ### Who owns task state
 
 `TaskBoard` (Core) is the **single in-memory owner** of the `TaskDocument`.
-It has pure operations (`Add`, `Toggle`, `Delete`, `Undo`, `MoveToInbox`,
-`MoveToToday`, `Rename`, `Reorder`) that return the new document. It raises
-`Changed`, and it asks `ITaskStore` to save, debounced to about 300 ms.
+It has operations (`Add`, `Toggle`, `Delete`, `UndoDelete`, `MoveToInbox`,
+`MoveToToday`, `Rename`, later `Reorder`). Each one replaces `Document` with a
+new immutable copy and returns `true` if something actually changed. Only then
+does it raise `Changed`. It asks `ITaskStore` to save, debounced to about 300 ms.
+Undo keeps **one** slot: the most recently deleted task. Added or moved tasks get
+`SortOrder = max + 1`, so they land at the bottom of their list.
 `TaskQueries` turns a document plus "today" into the **Today** and **Inbox**
 lists, using the rules in PRD §6 F3. ViewModels subscribe to `Changed` and
 rebuild their observable lists.
@@ -138,9 +141,11 @@ public sealed record AppSettings                      // settings.json
 }
 ```
 
-**Today rule:** `PlannedFor <= today && !IsDone` **or**
-`IsDone && CompletedAt.LocalDate == today`.
-**Inbox rule:** `PlannedFor == null && !IsDone` (plus Inbox items completed today).
+**Today rule:** `PlannedFor != null` and (`!IsDone && PlannedFor <= today`
+**or** `IsDone && CompletedAt.LocalDate == today`).
+**Inbox rule:** `PlannedFor == null` and (`!IsDone` **or** `CompletedAt.LocalDate == today`).
+A done task stays in the list it was in, struck through, until the day changes,
+so it never shows in both lists.
 When a task's day passes, nothing is rewritten in the file; rollover is just
 a query.
 
