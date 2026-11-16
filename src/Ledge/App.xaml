@@ -8,6 +8,7 @@
         <ResourceDictionary Source="Themes/Colors.Dark.xaml" />
         <ResourceDictionary Source="Resources/Strings.xaml" />
         <ResourceDictionary Source="Themes/ScrollViewer.xaml" />
+        <ResourceDictionary Source="Views/TaskListResources.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

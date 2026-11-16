@@ -73,6 +73,13 @@
   <Thickness x:Key="TaskRowCheckboxMargin">12,0,8,0</Thickness>
   <Thickness x:Key="TaskRowTitleMargin">0,0,12,0</Thickness>
   <Thickness x:Key="EmptyStateMargin">12,0,12,0</Thickness>
+  <!-- Hover move icon: 12 from the row's right edge (DESIGN.md §2 "Move action") -->
+  <Thickness x:Key="TaskRowActionMargin">0,0,12,0</Thickness>
+  <!-- Inbox header chevron (DESIGN.md §2 "Inbox header"): 12 DIP, 4 DIP gap, turns 90° in 150 ms -->
+  <sys:Double x:Key="ChevronIconSize">12</sys:Double>
+  <Thickness x:Key="ChevronGap">0,0,4,0</Thickness>
+  <sys:Double x:Key="ChevronExpandedAngle">90</sys:Double>
+  <Duration x:Key="InboxChevronDuration">0:0:0.150</Duration>
   <!-- Done row (DESIGN.md §4): opacity 60 %, 150 ms QuadraticEase EaseOut -->
   <sys:Double x:Key="TaskDoneOpacity">0.6</sys:Double>
   <!--
@@ -113,6 +120,11 @@
   <!-- Square checkbox (DESIGN.md §2): outline, and filled square with the check cut out -->
   <sys:String x:Key="GlyphCheckboxOpen">&#xE739;</sys:String>
   <sys:String x:Key="GlyphCheckboxDone">&#xE73D;</sys:String>
+  <!-- Move action (DESIGN.md §2): tray = to Inbox, calendar = to Today -->
+  <sys:String x:Key="GlyphMoveToInbox">&#xE7B8;</sys:String>
+  <sys:String x:Key="GlyphMoveToToday">&#xE787;</sys:String>
+  <!-- Points right (▸); rotated 90° when the Inbox is open (▾) -->
+  <sys:String x:Key="GlyphChevron">&#xE76C;</sys:String>
 
   <!--
     Near-transparent hit area (ARCHITECTURE.md §6). Alpha 1/255 is invisible but,

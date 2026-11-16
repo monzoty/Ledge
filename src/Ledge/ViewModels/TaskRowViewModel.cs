@@ -16,6 +16,10 @@ public sealed partial class TaskRowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDone;
 
+    /// <summary>No planned date: the row offers "Move to Today" instead of "Move to Inbox".</summary>
+    [ObservableProperty]
+    private bool _isInInbox;
+
     public TaskRowViewModel(TaskItem task)
     {
         Id = task.Id;
@@ -29,5 +33,6 @@ public sealed partial class TaskRowViewModel : ObservableObject
     {
         Title = task.Title;
         IsDone = task.IsDone;
+        IsInInbox = task.PlannedFor is null;
     }
 }

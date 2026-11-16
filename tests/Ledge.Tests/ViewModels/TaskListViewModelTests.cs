@@ -180,6 +180,90 @@ public sealed class TaskListViewModelTests
         Assert.True(_viewModel.IsTodayEmpty);
     }
 
+    // --- Inbox ------------------------------------------------------------------
+
+    [Fact]
+    public void Inbox_StartsCollapsedAndEmpty()
+    {
+        Assert.False(_viewModel.IsInboxExpanded);
+        Assert.True(_viewModel.IsInboxEmpty);
+        Assert.False(_viewModel.ShowInboxEmpty); // collapsed: no "Inbox is clear."
+    }
+
+    [Fact]
+    public void ToggleInbox_OpensAndCloses_AndUpdatesEmptyText()
+    {
+        var changed = new List<string?>();
+        _viewModel.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        _viewModel.ToggleInboxCommand.Execute(null);
+
+        Assert.True(_viewModel.IsInboxExpanded);
+        Assert.True(_viewModel.ShowInboxEmpty);
+        Assert.Contains(nameof(TaskListViewModel.ShowInboxEmpty), changed);
+
+        _viewModel.ToggleInboxCommand.Execute(null);
+
+        Assert.False(_viewModel.IsInboxExpanded);
+    }
+
+    [Fact]
+    public void Move_TodayRow_GoesToBottomOfInbox()
+    {
+        var inboxTask = _board.Add("Already in inbox")!;
+        _board.MoveToInbox(inboxTask.Id);
+        _board.Add("Stay");
+        _board.Add("Go");
+
+        _viewModel.MoveCommand.Execute(_viewModel.Today.Single(row => row.Title == "Go"));
+
+        Assert.Equal(["Stay"], TodayTitles);
+        Assert.Equal(["Already in inbox", "Go"], _viewModel.Inbox.Select(row => row.Title));
+        Assert.True(_viewModel.Inbox[1].IsInInbox);
+        Assert.Equal(2, _viewModel.InboxOpenCount);
+        Assert.Equal(1, _viewModel.TodayOpenCount);
+    }
+
+    [Fact]
+    public void Move_InboxRow_GoesBackToToday()
+    {
+        var task = _board.Add("Task")!;
+        _board.MoveToInbox(task.Id);
+
+        _viewModel.MoveCommand.Execute(_viewModel.Inbox[0]);
+
+        Assert.Equal(["Task"], TodayTitles);
+        Assert.False(_viewModel.Today[0].IsInInbox);
+        Assert.Empty(_viewModel.Inbox);
+        Assert.True(_viewModel.IsInboxEmpty);
+    }
+
+    [Fact]
+    public void Move_WithNull_DoesNothing()
+    {
+        _board.Add("Task");
+
+        _viewModel.MoveCommand.Execute(null);
+
+        Assert.Single(_viewModel.Today);
+    }
+
+    [Fact]
+    public void InboxOpenCount_IgnoresDoneTasks()
+    {
+        var a = _board.Add("A")!;
+        var b = _board.Add("B")!;
+        _board.MoveToInbox(a.Id);
+        _board.MoveToInbox(b.Id);
+
+        _board.Toggle(a.Id);
+
+        Assert.Equal(2, _viewModel.Inbox.Count); // done stays visible today
+        Assert.Equal(1, _viewModel.InboxOpenCount);
+    }
+
+    // --- Day change -------------------------------------------------------------
+
     [Fact]
     public void Refresh_AfterMidnight_DropsTasksDoneYesterday()
     {

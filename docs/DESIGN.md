@@ -89,6 +89,18 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
   the pill's "{n} today". Done rows aren't counted.
 - **Empty state:** `Small` style in `TextSecondary`, 12 DIP in, vertically
   centred in one row height (32).
+- **Inbox header:** `▸ INBOX · n`, always visible, even at 0. It has a Fluent
+  chevron at 12 DIP in `TextSecondary` with a 4 DIP gap before the caption.
+  Clicking anywhere on the header line opens or closes the Inbox, and the
+  chevron turns 90° (▸ → ▾) over **150 ms**, `QuadraticEase` EaseOut.
+  Collapsed by default; the open/closed state is remembered while the app
+  runs, but not saved. The count is **open** Inbox tasks. When the Inbox is
+  open but empty, it shows "Inbox is clear.", styled like the Today empty state.
+- **Move action (mouse):** while the mouse is over a row, a 16 DIP icon in
+  `TextSecondary` appears at the row's right end, 12 DIP from the edge, with a
+  12 DIP gap after the title. On Today rows it's an inbox tray (tooltip
+  "Move to Inbox"); on Inbox rows it's a calendar (tooltip "Move to Today").
+  One click moves the task. The keyboard equivalent is `Ctrl+I` (§5).
 - **Growing while open:** when content changes the panel's height, it eases to
   the new height over **150 ms**, `QuadraticEase` EaseOut (same as the pill
   label change in §4).
@@ -191,6 +203,7 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Quick-add placeholder | "Add a task…" |
 | Today empty | "Nothing on the ledge. Add a task above." |
 | Inbox empty | "Inbox is clear." |
+| Move action tooltips | "Move to Inbox" / "Move to Today" |
 | Pill, nothing open | "All clear" |
 | Pill, tasks open | "{n} today" |
 | Timer finished: title | "Focus session done" |

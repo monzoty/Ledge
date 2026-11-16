@@ -217,9 +217,11 @@ linking to the Microsoft docs page for that function. Prefer
   (`FocusSession`), and remaining time = `Duration − (now − StartedAt − PausedTotal)`.
   The UI ticks once per second with `TimeProvider.CreateTimer`, only while a
   session is running. Sleep and wake therefore can't make it drift (ADR-0004).
-- **Day rollover:** one timer scheduled for the next local midnight. On wake
-  from sleep (`SystemEvents.PowerModeChanged`), "today" and the lists are
-  recomputed.
+- **Day rollover:** `LocalDayWatcher` (Core) keeps one `TimeProvider` timer set
+  for the next local midnight and raises `DayChanged` when the date changes.
+  `DayRolloverService` (app) also calls `Check()` on wake from sleep
+  (`SystemEvents.PowerModeChanged`) and on clock changes (`SystemEvents.TimeChanged`),
+  then refreshes the lists on the UI thread. Opening the panel also refreshes them.
 - File I/O is async and runs off the UI thread; results come back on the
   Dispatcher.
 

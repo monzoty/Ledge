@@ -14,6 +14,10 @@
   <!-- xml:space="preserve": XAML trims leading/trailing spaces from text otherwise ("TODAY·2"). -->
   <sys:String x:Key="SectionCountSeparator" xml:space="preserve"> · </sys:String>
   <sys:String x:Key="TodayEmpty">Nothing on the ledge. Add a task above.</sys:String>
+  <sys:String x:Key="SectionInbox">Inbox</sys:String>
+  <sys:String x:Key="InboxEmpty">Inbox is clear.</sys:String>
+  <sys:String x:Key="MoveToInbox">Move to Inbox</sys:String>
+  <sys:String x:Key="MoveToToday">Move to Today</sys:String>
   <!-- {0} = the shortcut, e.g. "Win+Alt+L" -->
   <sys:String x:Key="HotkeyTakenMessage">{0} is already used by another app. Pick a different shortcut in Settings.</sys:String>
 

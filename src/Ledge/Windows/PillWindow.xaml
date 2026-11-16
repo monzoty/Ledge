@@ -101,6 +101,7 @@
               -->
               <StackPanel x:Name="ListContent" SizeChanged="OnListContentSizeChanged">
                 <views:TodaySection />
+                <views:InboxSection />
               </StackPanel>
             </ScrollViewer>
           </DockPanel>

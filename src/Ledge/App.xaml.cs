@@ -83,6 +83,10 @@ public sealed partial class App : Application
         await _host.StartAsync();
 
         WatchForSaveFailures();
+
+        // Nobody else asks for it, so create it here; from now on it listens.
+        _host.Services.GetRequiredService<DayRolloverService>();
+
         _host.Services.GetRequiredService<PillWindow>().Show();
     }
 
@@ -118,10 +122,12 @@ public sealed partial class App : Application
         services.AddSingleton(loaded);
         services.AddSingleton(_ => new TaskBoard(time, loaded.Document));
         services.AddSingleton<TaskAutoSaver>();
+        services.AddSingleton<LocalDayWatcher>();
 
         // UI services
         services.AddSingleton<ScreenService>();
         services.AddSingleton<HotkeyService>();
+        services.AddSingleton<DayRolloverService>();
 
         // ViewModels and windows
         services.AddSingleton<TaskListViewModel>();
@@ -147,6 +153,7 @@ public sealed partial class App : Application
         }
 
         Resources["TaskDoneDuration"] = new Duration(TimeSpan.Zero);
+        Resources["InboxChevronDuration"] = new Duration(TimeSpan.Zero);
     }
 
     /// <summary>

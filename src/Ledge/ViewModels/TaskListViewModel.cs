@@ -7,8 +7,8 @@ using Ledge.Core.Services;
 namespace Ledge.ViewModels;
 
 /// <summary>
-/// What the panel's task area shows and can do: quick-add and the Today list.
-/// The Inbox, delete/undo, rename and keyboard actions come in step 3c.
+/// What the panel's task area shows and can do: quick-add, the Today list and
+/// the collapsible Inbox. Delete/undo, rename and keyboard actions come in step 3d.
 /// </summary>
 /// <remarks>
 /// MVVM: the View (XAML) binds to properties and commands here, and this
@@ -40,6 +40,23 @@ public sealed partial class TaskListViewModel : ObservableObject
     [ObservableProperty]
     private bool _isTodayEmpty = true;
 
+    /// <summary>Open tasks in the Inbox: the number in "INBOX · n".</summary>
+    [ObservableProperty]
+    private int _inboxOpenCount;
+
+    /// <summary>
+    /// Inbox open or closed. Collapsed by default; kept while the app runs
+    /// (this ViewModel is a singleton) but not saved (DESIGN.md §2).
+    /// [NotifyPropertyChangedFor] also announces ShowInboxEmpty, which depends on it.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowInboxEmpty))]
+    private bool _isInboxExpanded;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowInboxEmpty))]
+    private bool _isInboxEmpty = true;
+
     public TaskListViewModel(TaskBoard board, TimeProvider time)
     {
         _board = board;
@@ -57,17 +74,28 @@ public sealed partial class TaskListViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<TaskRowViewModel> Today { get; } = [];
 
+    /// <summary>The rows of the Inbox (tasks without a planned date).</summary>
+    public ObservableCollection<TaskRowViewModel> Inbox { get; } = [];
+
+    /// <summary>"Inbox is clear." shows only when the Inbox is open AND empty.</summary>
+    public bool ShowInboxEmpty => IsInboxExpanded && IsInboxEmpty;
+
     /// <summary>
     /// Re-reads the lists from the board. Rows are matched by task Id and
     /// updated in place rather than recreated (see <see cref="Sync"/>).
+    /// Also called at midnight and on wake-up, when "today" itself changes.
     /// </summary>
     public void Refresh()
     {
         var today = TaskQueries.Today(_board.Document, _time);
         Sync(Today, today);
-
         TodayOpenCount = today.Count(task => !task.IsDone);
         IsTodayEmpty = Today.Count == 0;
+
+        var inbox = TaskQueries.Inbox(_board.Document, _time);
+        Sync(Inbox, inbox);
+        InboxOpenCount = inbox.Count(task => !task.IsDone);
+        IsInboxEmpty = Inbox.Count == 0;
     }
 
     /// <summary>
@@ -94,6 +122,32 @@ public sealed partial class TaskListViewModel : ObservableObject
             _board.Toggle(row.Id);
         }
     }
+
+    /// <summary>
+    /// The row's move icon (PRD F3.5): Today → Inbox, Inbox → Today. The row
+    /// leaves one list and appears at the bottom of the other.
+    /// </summary>
+    [RelayCommand]
+    private void Move(TaskRowViewModel? row)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        if (row.IsInInbox)
+        {
+            _board.MoveToToday(row.Id);
+        }
+        else
+        {
+            _board.MoveToInbox(row.Id);
+        }
+    }
+
+    /// <summary>Click on the "INBOX · n" header.</summary>
+    [RelayCommand]
+    private void ToggleInbox() => IsInboxExpanded = !IsInboxExpanded;
 
     /// <summary>
     /// Makes <paramref name="rows"/> match <paramref name="tasks"/> (same order)
