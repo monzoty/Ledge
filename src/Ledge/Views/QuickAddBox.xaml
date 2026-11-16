@@ -1,6 +1,6 @@
 <!--
   Quick-add box (DESIGN.md §2): "[+] Add a task…  ⏎".
-  Visual only for now; adding tasks is wired up in M3.
+  DataContext: TaskListViewModel (set by PillWindow).
 -->
 <UserControl x:Class="Ledge.Views.QuickAddBox"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -44,8 +44,15 @@
         </TextBlock.Style>
       </TextBlock>
 
+      <!--
+        Two-way binding to QuickAddText. UpdateSourceTrigger=PropertyChanged
+        copies every keystroke to the ViewModel at once (the default waits until
+        the box loses focus, so Enter would add the OLD text).
+        https://learn.microsoft.com/dotnet/desktop/wpf/data/how-to-control-when-the-textbox-text-updates-the-source
+      -->
       <TextBox x:Name="Input"
                Grid.Column="1"
+               Text="{Binding QuickAddText, UpdateSourceTrigger=PropertyChanged}"
                Background="Transparent"
                BorderThickness="0"
                Padding="0"
@@ -53,7 +60,12 @@
                FontSize="{StaticResource BodyTextSize}"
                Foreground="{StaticResource TextPrimaryBrush}"
                CaretBrush="{StaticResource TextPrimaryBrush}"
-               VerticalContentAlignment="Center" />
+               VerticalContentAlignment="Center">
+        <!-- Enter runs AddCommand (generated from Add() by [RelayCommand]). -->
+        <TextBox.InputBindings>
+          <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
+        </TextBox.InputBindings>
+      </TextBox>
 
       <TextBlock Grid.Column="2"
                  Text="{StaticResource GlyphReturnKey}"

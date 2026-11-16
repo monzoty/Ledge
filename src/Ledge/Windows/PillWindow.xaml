@@ -82,7 +82,8 @@
         <!--
           Panel content (DESIGN.md §2). Always laid out at full panel width so
           nothing reflows while the shell grows; the Grid clips it meanwhile.
-          Only the quick-add box exists in M2.
+          Quick-add stays at the top; everything below it scrolls once the
+          panel reaches its max height. DataContext: TaskListViewModel (code-behind).
         -->
         <Border x:Name="PanelContent"
                 Width="{StaticResource PanelWidth}"
@@ -91,9 +92,18 @@
                 VerticalAlignment="Top"
                 Opacity="0"
                 Visibility="Collapsed">
-          <StackPanel>
-            <views:QuickAddBox x:Name="QuickAdd" />
-          </StackPanel>
+          <DockPanel>
+            <views:QuickAddBox x:Name="QuickAdd" DockPanel.Dock="Top" />
+            <ScrollViewer Style="{StaticResource ThinScrollViewer}" Focusable="False">
+              <!--
+                Inside a ScrollViewer, content gets unlimited height, so its
+                SizeChanged tells us the list's natural height (used to resize the panel).
+              -->
+              <StackPanel x:Name="ListContent" SizeChanged="OnListContentSizeChanged">
+                <views:TodaySection />
+              </StackPanel>
+            </ScrollViewer>
+          </DockPanel>
         </Border>
 
       </Grid>

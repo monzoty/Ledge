@@ -63,8 +63,8 @@ Ledge.sln
 │  └─ Ledge.Core/                ← plain .NET (net9.0), NO WPF or Windows references
 │     ├─ Models/                 ← TaskItem, TaskDocument, FocusSession, AppSettings
 │     ├─ Abstractions/           ← ITaskStore, ISettingsStore, IFocusTimer
-│     └─ Services/               ← TaskBoard, TaskQueries, JsonTaskStore,
-│                                  JsonSettingsStore, FocusTimer, AtomicFile
+│     └─ Services/               ← TaskBoard, TaskQueries, TaskTitle, TaskAutoSaver,
+│                                  JsonTaskStore, JsonSettingsStore, FocusTimer, AtomicFile
 │
 └─ tests/
    └─ Ledge.Core.Tests/          ← xUnit tests for Core
@@ -95,7 +95,9 @@ project.
 It has operations (`Add`, `Toggle`, `Delete`, `UndoDelete`, `MoveToInbox`,
 `MoveToToday`, `Rename`, later `Reorder`). Each one replaces `Document` with a
 new immutable copy and returns `true` if something actually changed. Only then
-does it raise `Changed`. It asks `ITaskStore` to save, debounced to about 300 ms.
+does it raise `Changed`. `TaskAutoSaver` (Core) listens to `Changed` and calls
+`ITaskStore.SaveAsync` once nothing has changed for 300 ms. Its `FlushAsync()`
+saves immediately; `App.OnExit` uses it with a 2 s limit (ADR-0005).
 Undo keeps **one** slot: the most recently deleted task. Added or moved tasks get
 `SortOrder = max + 1`, so they land at the bottom of their list.
 `TaskQueries` turns a document plus "today" into the **Today** and **Inbox**

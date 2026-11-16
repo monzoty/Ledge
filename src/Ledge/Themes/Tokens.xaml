@@ -65,6 +65,29 @@
   <Thickness x:Key="QuickAddTrailingIconMargin">8,0,12,0</Thickness>
 
   <!--
+    Task lists (DESIGN.md §2 "List details"): everything starts 12 in (under the
+    quick-add "+"), 8 between checkbox and title; header 12 below the block
+    above, rows 4 below the header. Right-hand 12 mirrors the left (derived).
+  -->
+  <Thickness x:Key="SectionHeaderMargin">12,12,12,4</Thickness>
+  <Thickness x:Key="TaskRowCheckboxMargin">12,0,8,0</Thickness>
+  <Thickness x:Key="TaskRowTitleMargin">0,0,12,0</Thickness>
+  <Thickness x:Key="EmptyStateMargin">12,0,12,0</Thickness>
+  <!-- Done row (DESIGN.md §4): opacity 60 %, 150 ms QuadraticEase EaseOut -->
+  <sys:Double x:Key="TaskDoneOpacity">0.6</sys:Double>
+  <!--
+    A Duration (not TimeSpan) because XAML Storyboards use it directly.
+    App.OnStartup sets it to 0 when Windows "Animation effects" is off.
+  -->
+  <Duration x:Key="TaskDoneDuration">0:0:0.150</Duration>
+  <!-- Panel grows/shrinks to fit new content while open (DESIGN.md §2) -->
+  <sys:TimeSpan x:Key="PanelResizeDuration">0:0:0.150</sys:TimeSpan>
+
+  <!-- Thin overlay scrollbar (DESIGN.md §2): 4 wide; radius = half the width (derived) -->
+  <sys:Double x:Key="ScrollBarWidth">4</sys:Double>
+  <CornerRadius x:Key="ScrollBarCornerRadius">2</CornerRadius>
+
+  <!--
     Overlay window size (ADR-0003). Derived, not a design value:
       margin = PanelShadowBlur + PanelShadowOffsetY = 32
       width  = PanelWidth    + 2 × 32 = 424
@@ -87,6 +110,9 @@
   <sys:String x:Key="GlyphCheckMark">&#xE73E;</sys:String>
   <sys:String x:Key="GlyphAdd">&#xE710;</sys:String>
   <sys:String x:Key="GlyphReturnKey">&#xE751;</sys:String>
+  <!-- Square checkbox (DESIGN.md §2): outline, and filled square with the check cut out -->
+  <sys:String x:Key="GlyphCheckboxOpen">&#xE739;</sys:String>
+  <sys:String x:Key="GlyphCheckboxDone">&#xE73D;</sys:String>
 
   <!--
     Near-transparent hit area (ARCHITECTURE.md §6). Alpha 1/255 is invisible but,

@@ -5,6 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using Ledge.Interop;
 using Ledge.Services;
+using Ledge.ViewModels;
 
 namespace Ledge.Windows;
 
@@ -23,9 +24,10 @@ namespace Ledge.Windows;
 /// </remarks>
 public sealed partial class PillWindow : Window
 {
-    // Created here for now; injected through the Generic Host from M3.
-    private readonly ScreenService _screen = new();
-    private readonly HotkeyService _hotkey = new();
+    // Injected by the Generic Host (App.BuildHost). The host also disposes them on exit.
+    private readonly ScreenService _screen;
+    private readonly HotkeyService _hotkey;
+    private readonly TaskListViewModel _tasks;
 
     // Hover delays (DESIGN.md §5) stop the panel flickering when the mouse just passes by.
     // DispatcherTimer ticks on the UI thread, so it can touch WPF elements directly.
@@ -49,10 +51,26 @@ public sealed partial class PillWindow : Window
     private nint _pendingFocusReturn;
     private int _returnFocusPolls;
 
-    public PillWindow()
+    /// <summary>
+    /// The DI container calls this constructor and passes in what it lists,
+    /// so the window never decides for itself which services it gets.
+    /// </summary>
+    public PillWindow(ScreenService screen, HotkeyService hotkey, TaskListViewModel tasks)
     {
+        _screen = screen;
+        _hotkey = hotkey;
+
         InitializeComponent();
         InitializeAnimation();
+
+        // Bindings inside the panel ({Binding QuickAddText}, …) look things up here.
+        // https://learn.microsoft.com/dotnet/desktop/wpf/data/how-to-specify-the-binding-source
+        PanelContent.DataContext = tasks;
+
+        // A task completed yesterday must disappear today even if nothing else
+        // changed (PRD F3). Re-reading the lists on every open is cheap and covers
+        // the panel being opened after midnight. (A live midnight timer comes in 3c.)
+        _tasks = tasks;
 
         _returnFocusTimer = new DispatcherTimer { Interval = ReturnFocusPollInterval };
         _returnFocusTimer.Tick += (_, _) => TryReturnFocus();
@@ -82,12 +100,6 @@ public sealed partial class PillWindow : Window
         // The user clicked another window (or Alt+Tabbed away): close, and
         // leave focus where they put it.
         Deactivated += (_, _) => Collapse();
-
-        Closed += (_, _) =>
-        {
-            _hotkey.Dispose();
-            _screen.Dispose();
-        };
     }
 
     /// <summary>
@@ -323,6 +335,7 @@ public sealed partial class PillWindow : Window
         }
 
         IsExpanded = true;
+        _tasks.Refresh(); // before measuring, so the panel opens at the right height
         AnimateExpand();
     }
 

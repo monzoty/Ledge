@@ -10,7 +10,7 @@ namespace Ledge.Services;
 /// anything that affects the pill's position changes: resolution, monitors,
 /// or the taskbar (work area). The event is always raised on the UI thread.
 /// </summary>
-internal sealed class ScreenService : IDisposable
+public sealed class ScreenService : IDisposable
 {
     public ScreenService()
     {

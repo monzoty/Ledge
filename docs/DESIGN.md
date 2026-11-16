@@ -68,13 +68,33 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
 │  [+] Add a task…              ⏎      │  ← quick-add box (height 36)
 │  ◔ Focus  [15] [25] [50]   ▶ / ❚❚ ■  │  ← timer row (height 32)
 │ ──────────────────────────────────── │
-│  TODAY · 3                           │  ← section header (caption)
+│  TODAY · 2                           │  ← section header (caption; counts open tasks)
 │  ☐ Email Priya                       │  ← task row (height 32)
 │  ☐ Review PR #12                ◔    │     ◔ = linked to running timer
 │  ☑ ~~Buy milk~~                      │
 │  ▸ INBOX · 2                         │  ← collapsible, collapsed by default
 ╰──────────────────────────────────────╯
 ```
+
+**List details** (decided 2026-11-16):
+
+- **Checkbox:** square Fluent glyphs at 16 DIP. Open = outline in
+  `TextSecondary`; done = filled square with a check in `Success`.
+- **Horizontal alignment:** section headers, checkboxes and empty-state text
+  start **12 DIP** in, directly under the quick-add `+` icon. **8 DIP** between
+  the checkbox and the title, as between `+` and the placeholder.
+- **Vertical spacing:** section header **12 DIP** below the block above it;
+  first row **4 DIP** below its header.
+- **Section count:** `TODAY · n` counts **open** tasks only, the same number as
+  the pill's "{n} today". Done rows aren't counted.
+- **Empty state:** `Small` style in `TextSecondary`, 12 DIP in, vertically
+  centred in one row height (32).
+- **Growing while open:** when content changes the panel's height, it eases to
+  the new height over **150 ms**, `QuadraticEase` EaseOut (same as the pill
+  label change in §4).
+- **Scrolling** (beyond max height 520): a thin overlay scrollbar, **4 DIP**
+  wide, `Border` colour, rounded ends, visible only while the mouse is over
+  the list.
 
 ## 3. Visual style
 
@@ -104,7 +124,7 @@ screen's top edge. The **expanded panel** follows the Windows light/dark setting
 |---|---|---|---|
 | `PillText` | 12 | SemiBold, tabular digits | Pill label and timer |
 | `Body` | 14 | Regular | Task titles, input |
-| `Caption` | 12 | SemiBold, letter-spacing 4 %, UPPERCASE | Section headers |
+| `Caption` | 12 | SemiBold, UPPERCASE, `TextSecondary` | Section headers (WPF has no letter-spacing, so the earlier "4 %" was dropped on 2026-11-16) |
 | `Small` | 12 | Regular | Secondary info |
 
 **Theme:** follow the Windows app theme automatically (a setting can

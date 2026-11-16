@@ -77,7 +77,7 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] Core: `TaskItem`, `TaskDocument`, `TaskBoard`, `TaskQueries`
 - [x] Core: `ITaskStore` + `JsonTaskStore` + `AtomicFile` (`File.Replace` with `.bak`, schema version)
 - [x] Unit tests: add / complete / delete / undo / move / rename, Today vs Inbox, rollover at midnight, title rules (trim, empty, 200 chars), crash mid-save, corrupt file → backup, both corrupt
-- [ ] DI via the Generic Host; `TaskListViewModel` with `[ObservableProperty]` / `[RelayCommand]`
+- [x] DI via the Generic Host; `TaskListViewModel` with `[ObservableProperty]` / `[RelayCommand]`
 - [ ] Quick-add, Today list, collapsible Inbox, checkbox, delete with Ctrl+Z undo
 - [ ] Keyboard: ↑/↓, Space, Del, F2, Ctrl+I, Ctrl+N or `/` (DESIGN.md §5)
 - [ ] The pill shows "{n} today" / "All clear"

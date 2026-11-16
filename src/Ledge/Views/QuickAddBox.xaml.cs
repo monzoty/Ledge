@@ -4,7 +4,8 @@ using System.Windows.Input;
 namespace Ledge.Views;
 
 /// <summary>
-/// The "Add a task…" box at the top of the panel. Visual only until M3.
+/// The "Add a task…" box at the top of the panel. Text and Enter are bound to
+/// TaskListViewModel in XAML; this code-behind only handles focus (visual).
 /// </summary>
 public sealed partial class QuickAddBox : UserControl
 {

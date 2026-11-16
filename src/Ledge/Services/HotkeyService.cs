@@ -11,7 +11,7 @@ namespace Ledge.Services;
 /// whichever app has focus. Owns a hidden message-only window that receives
 /// WM_HOTKEY, so it doesn't depend on any visible window.
 /// </summary>
-internal sealed class HotkeyService : IDisposable
+public sealed class HotkeyService : IDisposable
 {
     /// <summary>Our own ID for the hotkey; WM_HOTKEY reports it back in wParam.</summary>
     private const int HotkeyId = 1;

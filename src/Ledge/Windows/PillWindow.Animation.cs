@@ -25,10 +25,21 @@ public sealed partial class PillWindow
 {
     private static readonly IEasingFunction ExpandEasing = new CubicEase { EasingMode = EasingMode.EaseOut };
     private static readonly IEasingFunction CollapseEasing = new CubicEase { EasingMode = EasingMode.EaseIn };
+    private static readonly IEasingFunction ResizeEasing = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+
+    /// <summary>
+    /// True while the open/close morph runs. The content's size changes during
+    /// it (it's being laid out), and those changes must not start a separate
+    /// resize that would fight the morph.
+    /// </summary>
+    private bool _isMorphing;
 
     // Our own brush instance for the shell: brushes from resources are frozen
     // (shared, read-only) and can't be animated.
     private readonly SolidColorBrush _shellBrush = new();
+
+    /// <summary>Height differences smaller than this (in DIPs) aren't worth animating.</summary>
+    private const double HeightTolerance = 0.5;
 
     private void InitializeAnimation()
     {
@@ -46,14 +57,56 @@ public sealed partial class PillWindow
         // radius (at pill height both radii look identical, so no visible jump).
         PanelContent.Visibility = Visibility.Visible;
         Shell.CornerRadius = (CornerRadius)FindResource("PanelCornerRadius");
+        _isMorphing = true;
 
         Animate(Shell, WidthProperty, Double("PanelWidth"), TimeSpan.Zero, half, ExpandEasing);
-        Animate(Shell, HeightProperty, PanelHeight(), half, half, ExpandEasing);
+        var heightDone = Animate(Shell, HeightProperty, PanelHeight(), half, half, ExpandEasing);
         AnimateColor(BrushColor("BackgroundBrush"), total, ExpandEasing);
         Animate(ShellShadow, DropShadowEffect.OpacityProperty, Double("PanelShadowOpacity"), TimeSpan.Zero, total, ExpandEasing);
 
         Animate(PillContent, OpacityProperty, 0, TimeSpan.Zero, fadeDelay, ExpandEasing);
         Animate(PanelContent, OpacityProperty, 1, fadeDelay, total - fadeDelay, ExpandEasing);
+
+        heightDone.Completed += (_, _) =>
+        {
+            // Closed again before we got here? Then the collapse owns the shape now.
+            if (!IsExpanded)
+            {
+                return;
+            }
+
+            _isMorphing = false;
+
+            // The content may have changed while opening; catch up if so.
+            AnimateToContentHeight();
+        };
+    }
+
+    /// <summary>
+    /// The list's natural height changed (task added/removed, done, empty state…).
+    /// While open, ease the panel to the new height (DESIGN.md §2 "List details").
+    /// </summary>
+    private void OnListContentSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (!e.HeightChanged || !IsExpanded || _isMorphing)
+        {
+            return;
+        }
+
+        AnimateToContentHeight();
+    }
+
+    private void AnimateToContentHeight()
+    {
+        var target = PanelHeight();
+
+        // ActualHeight is what's on screen now; skip if it's already right.
+        if (Math.Abs(Shell.ActualHeight - target) < HeightTolerance)
+        {
+            return;
+        }
+
+        Animate(Shell, HeightProperty, target, TimeSpan.Zero, Duration("PanelResizeDuration"), ResizeEasing);
     }
 
     private void AnimateCollapse()
@@ -61,6 +114,7 @@ public sealed partial class PillWindow
         var total = Duration("CollapseDuration");
         var fade = Duration("CollapseContentFadeDuration");
         var sizeStep = (total - fade) / 2;
+        _isMorphing = true;
 
         // Content fades out first, then height shrinks, then width.
         Animate(PanelContent, OpacityProperty, 0, TimeSpan.Zero, fade, CollapseEasing);
