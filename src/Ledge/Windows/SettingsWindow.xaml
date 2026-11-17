@@ -15,7 +15,7 @@
         SizeToContent="Height"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}"
+        Background="{DynamicResource BackgroundBrush}"
         UseLayoutRounding="True">
 
   <Window.Resources>
@@ -38,7 +38,7 @@
               Height="{StaticResource QuickAddHeight}"
               Padding="{StaticResource MenuItemPadding}"
               CornerRadius="{StaticResource RowCornerRadius}"
-              Background="{StaticResource SurfaceBrush}"
+              Background="{DynamicResource SurfaceBrush}"
               Focusable="True"
               FocusVisualStyle="{StaticResource FocusRingVisual}"
               AutomationProperties.Name="{StaticResource SettingsShortcut}"
@@ -52,7 +52,7 @@
               <Style.Triggers>
                 <DataTrigger Binding="{Binding IsRecording}" Value="True">
                   <Setter Property="Text" Value="{StaticResource SettingsShortcutRecording}" />
-                  <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                  <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                 </DataTrigger>
               </Style.Triggers>
             </Style>
@@ -62,7 +62,7 @@
 
       <!-- While recording: the 2 DIP FocusRing, drawn on top so nothing moves. -->
       <Border CornerRadius="{StaticResource RowCornerRadius}"
-              BorderBrush="{StaticResource FocusRingBrush}"
+              BorderBrush="{DynamicResource FocusRingBrush}"
               BorderThickness="{StaticResource FocusRingThickness}"
               IsHitTestVisible="False"
               Visibility="{Binding IsRecording, Converter={StaticResource BoolToVisibility}}" />
@@ -88,7 +88,7 @@
       <TextBlock Text="{StaticResource SettingsShortcutInvalid}">
         <TextBlock.Style>
           <Style TargetType="TextBlock" BasedOn="{StaticResource SettingsHint}">
-            <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
             <Setter Property="Visibility" Value="Hidden" />
             <Style.Triggers>
               <DataTrigger Binding="{Binding ShortcutProblem}" Value="{x:Static vm:ShortcutProblem.Invalid}">
@@ -102,7 +102,7 @@
       <TextBlock Text="{Binding TakenShortcutText, StringFormat={StaticResource SettingsShortcutTaken}}">
         <TextBlock.Style>
           <Style TargetType="TextBlock" BasedOn="{StaticResource SettingsHint}">
-            <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
             <Setter Property="Visibility" Value="Hidden" />
             <Style.Triggers>
               <DataTrigger Binding="{Binding ShortcutProblem}" Value="{x:Static vm:ShortcutProblem.Taken}">
@@ -128,7 +128,7 @@
                Style="{StaticResource SettingsLabel}"
                Margin="{StaticResource SettingsSectionLabelMargin}" />
     <Border CornerRadius="{StaticResource RowCornerRadius}"
-            Background="{StaticResource SurfaceBrush}">
+            Background="{DynamicResource SurfaceBrush}">
       <!-- UniformGrid: three equal-width segments across the full width. -->
       <UniformGrid Rows="1">
         <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme"

@@ -98,7 +98,7 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] `AppSettings` + `ISettingsStore` (`settings.json`, same atomic writes) + tests
 - [x] Settings window: hotkey (validated live), start with Windows, theme
 - [x] Start with Windows via the HKCU Run key
-- [ ] Light theme colours + following the Windows theme live
+- [x] Light theme colours + following the Windows theme live
 - [ ] Second launch opens the existing panel (named event)
 - [ ] File logging to `%LOCALAPPDATA%\Ledge\logs` (no task titles)
 

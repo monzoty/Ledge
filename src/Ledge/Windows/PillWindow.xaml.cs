@@ -76,7 +76,8 @@ public sealed partial class PillWindow : Window
         HotkeyService hotkey,
         TaskListViewModel tasks,
         TimeProvider time,
-        SettingsService settings)
+        SettingsService settings,
+        ThemeService theme)
     {
         _screen = screen;
         _hotkey = hotkey;
@@ -127,6 +128,8 @@ public sealed partial class PillWindow : Window
         DpiChanged += (_, _) => Dispatcher.BeginInvoke(PositionAtTopCentre);
 
         _hotkey.Pressed += (_, _) => TogglePanel();
+
+        theme.ThemeChanged += (_, _) => ApplyThemeToShell();
 
         // The user clicked another window (or Alt+Tabbed away): close, and
         // leave focus where they put it.

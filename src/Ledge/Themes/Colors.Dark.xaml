@@ -1,6 +1,8 @@
 <!--
   Colour tokens, dark theme. Source of truth: docs/DESIGN.md §3.
-  Colors.Light.xaml (same keys) arrives in M4.
+  Colors.Light.xaml has the same keys; ThemeService swaps one for the other.
+  Panel colours are used with {DynamicResource …} so they follow the swap;
+  pill colours are the same in both files.
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -8,6 +10,8 @@
   <!-- Pill: identical in both themes -->
   <SolidColorBrush x:Key="PillBackgroundBrush" Color="#121214" />
   <SolidColorBrush x:Key="PillTextBrush" Color="#F2F2F5" />
+  <!-- The "3 today" dot: always the dark-theme amber, because the pill is always dark (DESIGN.md §3) -->
+  <SolidColorBrush x:Key="PillAccentBrush" Color="#F5A524" />
 
   <!-- Panel -->
   <SolidColorBrush x:Key="BackgroundBrush" Color="#1B1B1F" />

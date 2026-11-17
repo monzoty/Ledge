@@ -145,7 +145,7 @@
             </StackPanel.Style>
             <Ellipse Width="{StaticResource PillDotSize}"
                      Height="{StaticResource PillDotSize}"
-                     Fill="{StaticResource AccentBrush}"
+                     Fill="{StaticResource PillAccentBrush}"
                      VerticalAlignment="Center" />
             <TextBlock Text="{Binding TodayOpenCount, StringFormat={StaticResource PillTodayFormat}}"
                        Style="{StaticResource PillLabel}" />
@@ -189,12 +189,12 @@
               <Grid VerticalAlignment="Center">
                 <TextBlock Text="{StaticResource DataRestoredNotice}"
                            Style="{StaticResource EmptyStateText}"
-                           Foreground="{StaticResource DangerBrush}"
+                           Foreground="{DynamicResource DangerBrush}"
                            TextWrapping="Wrap"
                            Visibility="{Binding ShowRestoredNotice, Converter={StaticResource BoolToVisibility}}" />
                 <TextBlock Text="{StaticResource DataResetNotice}"
                            Style="{StaticResource EmptyStateText}"
-                           Foreground="{StaticResource DangerBrush}"
+                           Foreground="{DynamicResource DangerBrush}"
                            TextWrapping="Wrap"
                            Visibility="{Binding ShowResetNotice, Converter={StaticResource BoolToVisibility}}" />
               </Grid>

@@ -142,6 +142,7 @@ screen's top edge. The **expanded panel** follows the Windows light/dark setting
 |---|---|---|---|
 | `PillBackground` | `#121214` | `#121214` | Solid, the same in both themes |
 | `PillText` | `#F2F2F5` | `#F2F2F5` | |
+| `PillAccent` | `#F5A524` | `#F5A524` | The pill's "n today" dot. Always the dark-theme amber, because the pill is always dark (added 2026-11-17). |
 | `Background` (panel) | `#F7F7F4` | `#1B1B1F` | **Solid** in v0.1. No acrylic or blur: that's hard in WPF and costs CPU. |
 | `Surface` (rows on hover, input) | `#FFFFFF` | `#26262C` | |
 | `Border` / divider | `#E4E4DF` | `#33333B` | 1 DIP |

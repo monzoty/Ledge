@@ -8,7 +8,7 @@
              Height="{StaticResource QuickAddHeight}">
 
   <Border CornerRadius="{StaticResource RowCornerRadius}"
-          Background="{StaticResource SurfaceBrush}">
+          Background="{DynamicResource SurfaceBrush}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
@@ -21,7 +21,7 @@
                  Margin="{StaticResource QuickAddLeadingIconMargin}"
                  FontFamily="{StaticResource IconFont}"
                  FontSize="{StaticResource PanelIconSize}"
-                 Foreground="{StaticResource TextSecondaryBrush}"
+                 Foreground="{DynamicResource TextSecondaryBrush}"
                  VerticalAlignment="Center" />
 
       <!-- Placeholder: shown only while the box is empty -->
@@ -29,7 +29,7 @@
                  Text="{StaticResource QuickAddPlaceholder}"
                  FontFamily="{StaticResource UiFont}"
                  FontSize="{StaticResource BodyTextSize}"
-                 Foreground="{StaticResource TextSecondaryBrush}"
+                 Foreground="{DynamicResource TextSecondaryBrush}"
                  VerticalAlignment="Center"
                  IsHitTestVisible="False">
         <TextBlock.Style>
@@ -58,8 +58,8 @@
                Padding="0"
                FontFamily="{StaticResource UiFont}"
                FontSize="{StaticResource BodyTextSize}"
-               Foreground="{StaticResource TextPrimaryBrush}"
-               CaretBrush="{StaticResource TextPrimaryBrush}"
+               Foreground="{DynamicResource TextPrimaryBrush}"
+               CaretBrush="{DynamicResource TextPrimaryBrush}"
                VerticalContentAlignment="Center">
         <!-- Enter runs AddCommand (generated from Add() by [RelayCommand]). -->
         <TextBox.InputBindings>
@@ -72,7 +72,7 @@
                  Margin="{StaticResource QuickAddTrailingIconMargin}"
                  FontFamily="{StaticResource IconFont}"
                  FontSize="{StaticResource PanelIconSize}"
-                 Foreground="{StaticResource TextSecondaryBrush}"
+                 Foreground="{DynamicResource TextSecondaryBrush}"
                  VerticalAlignment="Center" />
     </Grid>
   </Border>

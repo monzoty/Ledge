@@ -22,7 +22,7 @@
                    Text="{StaticResource GlyphChevron}"
                    FontFamily="{StaticResource IconFont}"
                    FontSize="{StaticResource ChevronIconSize}"
-                   Foreground="{StaticResource TextSecondaryBrush}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
                    Margin="{StaticResource ChevronGap}"
                    VerticalAlignment="Center"
                    RenderTransformOrigin="0.5,0.5">

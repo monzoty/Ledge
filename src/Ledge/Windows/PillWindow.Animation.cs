@@ -47,6 +47,17 @@ public sealed partial class PillWindow
         Shell.Background = _shellBrush;
     }
 
+    /// <summary>
+    /// The theme changed (ThemeService). Everything in XAML follows by itself
+    /// ({DynamicResource}), but the shell's colour is our own animated brush:
+    /// stop any running colour animation and set the right colour directly.
+    /// </summary>
+    private void ApplyThemeToShell()
+    {
+        _shellBrush.BeginAnimation(SolidColorBrush.ColorProperty, null);
+        _shellBrush.Color = BrushColor(IsExpanded ? "BackgroundBrush" : "PillBackgroundBrush");
+    }
+
     private void AnimateExpand()
     {
         var total = Duration("ExpandDuration");

@@ -12,15 +12,13 @@
 ## Current status
 
 - **Milestone:** M4, "Lives in the background", on branch `m4-background`.
-- **Committed:** 4a (tray, second launch, Alt+F4) and 4b (`settings.json` via
-  `JsonFile<T>`).
-- **Step 4c** (Settings window) is built and unit-tested, but not yet checked
-  by hand or committed. It covers live shortcut recording, Start with Windows
-  (HKCU Run key) and the theme picker. The theme choice is saved, but the
-  light colours come in 4d.
-- **Next:**
-  - 4d: light theme and following Windows
-  - 4e: file logging
+- **Committed:**
+  - 4a: tray, second launch, Alt+F4
+  - 4b: `settings.json` via `JsonFile<T>`
+  - 4c: Settings window
+- **Step 4d** (light theme, following Windows live) is built and unit-tested,
+  but not yet checked by hand or committed.
+- **Next:** 4e, file logging. That's the last M4 step.
 
 ## Milestone log
 
@@ -30,7 +28,7 @@
 | M1 Overlay window | ✅ | Tool window, no-activate, click-through, PerMonitorV2, single instance |
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
-| M4 Background app | in progress | 4a `8eb6cdd`, 4b `ac2eb1a`; 4c built (uncommitted) |
+| M4 Background app | in progress | 4a `8eb6cdd`, 4b `ac2eb1a`, 4c `5da8318`; 4d built (uncommitted) |
 
 ## Gotchas and lessons learned
 
@@ -99,6 +97,14 @@
   the `On…Changed` hooks, use an "initialising" flag.
 - **A closed WPF window can't be shown again.** Register it as transient and
   create a new one each time.
+- **`StaticResource` is looked up once; `DynamicResource` stays linked** to its
+  key. Anything that must change with the theme uses `DynamicResource`.
+  Colours that code reads (`FindResource`) must be re-read after a theme
+  change.
+- **The light `Accent` (#B45309) is for light backgrounds.** The pill is always
+  dark, so its dot uses its own `PillAccentBrush`.
+- **The title bar is drawn by Windows,** not WPF. Its dark or light look is set
+  with `DwmSetWindowAttribute` and must be updated when the theme changes.
 - **A click on a non-focusable element doesn't move keyboard focus,** so "click
   elsewhere cancels" needs a window-level `PreviewMouseDown`.
 

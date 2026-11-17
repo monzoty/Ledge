@@ -14,8 +14,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ContextMenu">
-          <Border Background="{StaticResource BackgroundBrush}"
-                  BorderBrush="{StaticResource BorderBrush}"
+          <Border Background="{DynamicResource BackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
                   BorderThickness="{StaticResource MenuBorderThickness}"
                   CornerRadius="{StaticResource RowCornerRadius}"
                   Padding="{StaticResource MenuPadding}">
@@ -42,12 +42,12 @@
                               VerticalAlignment="Center"
                               TextElement.FontFamily="{StaticResource UiFont}"
                               TextElement.FontSize="{StaticResource BodyTextSize}"
-                              TextElement.Foreground="{StaticResource TextPrimaryBrush}" />
+                              TextElement.Foreground="{DynamicResource TextPrimaryBrush}" />
           </Border>
           <ControlTemplate.Triggers>
             <!-- IsHighlighted: under the mouse, or selected with the arrow keys. -->
             <Trigger Property="IsHighlighted" Value="True">
-              <Setter TargetName="Background" Property="Background" Value="{StaticResource SurfaceBrush}" />
+              <Setter TargetName="Background" Property="Background" Value="{DynamicResource SurfaceBrush}" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

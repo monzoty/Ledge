@@ -78,6 +78,9 @@ public sealed partial class App : Application
         WatchForSaveFailures();
         SyncStartWithWindows();
 
+        // Before any window is created, so everything starts in the right colours.
+        _host.Services.GetRequiredService<ThemeService>().Start();
+
         // Nobody else asks for it, so create it here; from now on it listens.
         _host.Services.GetRequiredService<DayRolloverService>();
 
@@ -193,6 +196,7 @@ public sealed partial class App : Application
         services.AddSingleton<HotkeyService>();
         services.AddSingleton<IGlobalHotkey>(sp => sp.GetRequiredService<HotkeyService>());
         services.AddSingleton<IStartupRegistration, StartupService>();
+        services.AddSingleton<ThemeService>();
         services.AddSingleton<DayRolloverService>();
         services.AddSingleton<TrayService>();
 

@@ -19,7 +19,7 @@
     <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
     <Setter Property="FontSize" Value="{StaticResource CaptionTextSize}" />
     <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
@@ -28,7 +28,7 @@
     <Setter Property="Margin" Value="{StaticResource EmptyStateMargin}" />
     <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
     <Setter Property="FontSize" Value="{StaticResource SmallTextSize}" />
-    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
@@ -56,7 +56,7 @@
   <Style x:Key="RowIcon" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
     <Setter Property="FontSize" Value="{StaticResource PanelIconSize}" />
-    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
   </Style>
 
   <!--
@@ -109,12 +109,12 @@
                        Text="{StaticResource GlyphCheckboxOpen}"
                        FontFamily="{StaticResource IconFont}"
                        FontSize="{StaticResource PanelIconSize}"
-                       Foreground="{StaticResource TextSecondaryBrush}" />
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
             <TextBlock x:Name="DoneGlyph"
                        Text="{StaticResource GlyphCheckboxDone}"
                        FontFamily="{StaticResource IconFont}"
                        FontSize="{StaticResource PanelIconSize}"
-                       Foreground="{StaticResource SuccessBrush}"
+                       Foreground="{DynamicResource SuccessBrush}"
                        Opacity="0" />
           </Grid>
         </Button>
@@ -125,7 +125,7 @@
                      Text="{Binding Title}"
                      FontFamily="{StaticResource UiFont}"
                      FontSize="{StaticResource BodyTextSize}"
-                     Foreground="{StaticResource TextPrimaryBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
                      TextTrimming="CharacterEllipsis"
                      VerticalAlignment="Center">
             <TextBlock.InputBindings>
@@ -134,7 +134,7 @@
           </TextBlock>
 
           <Border x:Name="Editor"
-                  Background="{StaticResource SurfaceBrush}"
+                  Background="{DynamicResource SurfaceBrush}"
                   CornerRadius="{StaticResource RowCornerRadius}"
                   Visibility="Collapsed">
             <TextBox Text="{Binding EditText, UpdateSourceTrigger=PropertyChanged}"
@@ -145,8 +145,8 @@
                      Padding="0"
                      FontFamily="{StaticResource UiFont}"
                      FontSize="{StaticResource BodyTextSize}"
-                     Foreground="{StaticResource TextPrimaryBrush}"
-                     CaretBrush="{StaticResource TextPrimaryBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     CaretBrush="{DynamicResource TextPrimaryBrush}"
                      VerticalContentAlignment="Center">
               <TextBox.InputBindings>
                 <KeyBinding Key="Enter" Command="{Binding CommitRenameCommand}" />
@@ -199,14 +199,14 @@
     <DataTemplate.Triggers>
       <!-- Hover: Surface background (DESIGN.md §3) and the two icons. -->
       <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
-        <Setter TargetName="Row" Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter TargetName="Row" Property="Background" Value="{DynamicResource SurfaceBrush}" />
         <Setter TargetName="DeleteButton" Property="Visibility" Value="Visible" />
         <Setter TargetName="MoveButton" Property="Visibility" Value="Visible" />
       </Trigger>
 
       <!-- The trash turns Danger while the mouse is on it (DESIGN.md §2). -->
       <Trigger SourceName="DeleteButton" Property="IsMouseOver" Value="True">
-        <Setter TargetName="DeleteGlyph" Property="Foreground" Value="{StaticResource DangerBrush}" />
+        <Setter TargetName="DeleteGlyph" Property="Foreground" Value="{DynamicResource DangerBrush}" />
       </Trigger>
 
       <!--
@@ -214,8 +214,8 @@
         get focus from the keyboard code, so this never shows after a mouse click.
       -->
       <Trigger SourceName="Row" Property="IsKeyboardFocused" Value="True">
-        <Setter TargetName="Row" Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter TargetName="FocusRing" Property="BorderBrush" Value="{StaticResource FocusRingBrush}" />
+        <Setter TargetName="Row" Property="Background" Value="{DynamicResource SurfaceBrush}" />
+        <Setter TargetName="FocusRing" Property="BorderBrush" Value="{DynamicResource FocusRingBrush}" />
       </Trigger>
 
       <!-- Inbox rows offer the opposite move. -->

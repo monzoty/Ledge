@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using Ledge.Interop;
+using Ledge.Services;
 using Ledge.ViewModels;
 
 namespace Ledge.Windows;
@@ -13,15 +14,27 @@ namespace Ledge.Windows;
 public sealed partial class SettingsWindow : Window
 {
     private readonly SettingsViewModel _viewModel;
+    private readonly ThemeService _theme;
 
-    public SettingsWindow(SettingsViewModel viewModel)
+    public SettingsWindow(SettingsViewModel viewModel, ThemeService theme)
     {
         _viewModel = viewModel;
+        _theme = theme;
         DataContext = viewModel;
         InitializeComponent();
 
-        // Closing while recording must switch the old shortcut back on.
-        Closed += (_, _) => _viewModel.CancelRecordingCommand.Execute(null);
+        // The title bar is drawn by Windows, not WPF, so it needs telling.
+        _theme.ThemeChanged += OnThemeChanged;
+
+        Closed += (_, _) =>
+        {
+            // ThemeService lives for the whole app; unsubscribe so this closed
+            // window isn't kept in memory by its event.
+            _theme.ThemeChanged -= OnThemeChanged;
+
+            // Closing while recording must switch the old shortcut back on.
+            _viewModel.CancelRecordingCommand.Execute(null);
+        };
 
         // A click on a label or empty space doesn't move keyboard focus, so the
         // box wouldn't notice it; cancel recording for any click outside the box.
@@ -34,12 +47,19 @@ public sealed partial class SettingsWindow : Window
         };
     }
 
-    /// <summary>The HWND exists now: ask Windows for a dark title bar (DESIGN.md §5).</summary>
+    /// <summary>The HWND exists now: give the title bar the current theme (DESIGN.md §5).</summary>
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+        ApplyTitleBarTheme();
+    }
 
-        var useDark = 1;
+    private void OnThemeChanged(object? sender, EventArgs e) => ApplyTitleBarTheme();
+
+    /// <summary>Dark title bar in the dark theme, the normal light one otherwise.</summary>
+    private void ApplyTitleBarTheme()
+    {
+        var useDark = _theme.IsDark ? 1 : 0;
         NativeMethods.DwmSetWindowAttribute(
             new WindowInteropHelper(this).Handle,
             NativeMethods.DwmwaUseImmersiveDarkMode,
