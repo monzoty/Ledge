@@ -82,6 +82,15 @@ public sealed class JsonTaskStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Save_KeepsNonEnglishTextAndEmojiReadable()
+    {
+        await _store.SaveAsync(SampleDocument("Café ☕ + croissant"));
+
+        var json = await File.ReadAllTextAsync(MainPath);
+        Assert.Contains("\"title\": \"Café ☕ + croissant\"", json);
+    }
+
+    [Fact]
     public async Task Save_CreatesMissingFolder()
     {
         var store = new JsonTaskStore(Path.Combine(_folder.Path, "Ledge"), TestClock.Create());

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using Ledge.Core.Models;
 using Ledge.Interop;
 using Ledge.Services;
 using Ledge.ViewModels;
@@ -50,6 +51,7 @@ public sealed partial class PillWindow : Window
     private static readonly TimeSpan TrayClickGrace = TimeSpan.FromMilliseconds(500);
 
     private readonly TimeProvider _time;
+    private readonly AppSettings _settings;
 
     /// <summary>When the panel last closed because another window was activated.</summary>
     private long _closedByDeactivationAt;
@@ -68,11 +70,17 @@ public sealed partial class PillWindow : Window
     /// The DI container calls this constructor and passes in what it lists,
     /// so the window never decides for itself which services it gets.
     /// </summary>
-    public PillWindow(ScreenService screen, HotkeyService hotkey, TaskListViewModel tasks, TimeProvider time)
+    public PillWindow(
+        ScreenService screen,
+        HotkeyService hotkey,
+        TaskListViewModel tasks,
+        TimeProvider time,
+        AppSettings settings)
     {
         _screen = screen;
         _hotkey = hotkey;
         _time = time;
+        _settings = settings;
 
         InitializeComponent();
         InitializeAnimation();
@@ -246,13 +254,19 @@ public sealed partial class PillWindow : Window
     // --- Hotkey --------------------------------------------------------------
 
     /// <summary>
-    /// Registers the default hotkey (DESIGN.md §5). If another app owns it,
-    /// tell the user once; hover still works, so the app keeps running.
+    /// Registers the hotkey from settings.json (default Win+Alt+L, DESIGN.md §5).
+    /// If another app owns it, tell the user once; hover still works, so the
+    /// app keeps running.
     /// </summary>
     private void RegisterHotkey()
     {
-        var text = (string)FindResource("DefaultHotkey");
-        var gesture = (KeyGesture)new KeyGestureConverter().ConvertFromInvariantString(text)!;
+        var text = _settings.Hotkey;
+        if (TryParseHotkey(text) is not { } gesture)
+        {
+            // A hand-edited settings.json with a hotkey we can't read: use the default.
+            text = AppSettings.DefaultHotkey;
+            gesture = TryParseHotkey(text)!;
+        }
 
         if (_hotkey.TryRegister(gesture))
         {
@@ -269,6 +283,24 @@ public sealed partial class PillWindow : Window
         // Show it after start-up finishes, so the pill appears first.
         Dispatcher.BeginInvoke(() =>
             MessageBox.Show(message, (string)FindResource("AppName"), MessageBoxButton.OK, MessageBoxImage.Warning));
+    }
+
+    /// <summary>
+    /// "Win+Alt+L" → a KeyGesture, or null if the text isn't a valid shortcut.
+    /// WPF's converter throws for unknown keys, and KeyGesture itself refuses
+    /// combinations Windows can't use (e.g. a letter with no modifier).
+    /// https://learn.microsoft.com/dotnet/api/system.windows.input.keygestureconverter
+    /// </summary>
+    private static KeyGesture? TryParseHotkey(string text)
+    {
+        try
+        {
+            return new KeyGestureConverter().ConvertFromInvariantString(text) as KeyGesture;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or ArgumentException)
+        {
+            return null;
+        }
     }
 
     /// <summary>Tray icon left-click: like the hotkey, minus the click that just closed the panel.</summary>

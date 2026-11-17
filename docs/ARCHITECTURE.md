@@ -138,10 +138,13 @@ public sealed record AppSettings                      // settings.json
     public int SchemaVersion { get; init; } = 1;
     public string Hotkey { get; init; } = "Win+Alt+L"; // DESIGN.md §5; parsed in the app layer
     public bool StartWithWindows { get; init; }
-    public ThemeMode Theme { get; init; } = ThemeMode.System;
-    public int DefaultFocusMinutes { get; init; } = 25;
+    public ThemeMode Theme { get; init; } = ThemeMode.System; // saved as "system" / "light" / "dark"
+    // M5 adds: public int DefaultFocusMinutes { get; init; } = 25;
 }
 ```
+
+A missing property in `settings.json` takes its default. If the hotkey text
+can't be parsed, the app falls back to the default hotkey.
 
 **Today rule:** `PlannedFor != null` and (`!IsDone && PlannedFor <= today`
 **or** `IsDone && CompletedAt.LocalDate == today`).
@@ -154,6 +157,14 @@ a query.
 ## 5. Storage
 
 - Location: `%LOCALAPPDATA%\Ledge\tasks.json` and `settings.json`.
+- Both go through one generic class, `JsonFile<T>` (Core, internal), which
+  handles serialising, the atomic save and the load/recovery rules below.
+  `JsonTaskStore` and `JsonSettingsStore` only add their own "is this document
+  usable?" check. If settings can't be read, Ledge uses the defaults; it doesn't
+  show a notice.
+- The JSON is written readably: camelCase names, enums as text, and `+`,
+  accented letters and emoji left unescaped (`UnsafeRelaxedJsonEscaping`; the
+  "unsafe" only matters inside HTML).
 - **Atomic writes** (`AtomicFile` helper): write to `tasks.json.tmp`, flush
   it, then `File.Replace(tmp, tasks.json, tasks.json.bak)`. That one call
   swaps the files *and* keeps the previous version as `.bak`. On the very

@@ -62,10 +62,14 @@ public sealed partial class App : Application
         var store = new JsonTaskStore(DataFolder, time);
         var loaded = await store.LoadAsync();
 
+        // Settings too: the hotkey is registered as soon as the window exists.
+        var settingsStore = new JsonSettingsStore(DataFolder, time);
+        var settings = await settingsStore.LoadAsync();
+
         // Read after DisableXamlAnimationsIfTurnedOff, so it's 0 when animations are off.
         var motion = new TaskListMotion(((Duration)FindResource("TaskRemoveDuration")).TimeSpan);
 
-        _host = BuildHost(time, store, loaded, motion);
+        _host = BuildHost(time, store, loaded, settingsStore, settings, motion);
         await _host.StartAsync();
 
         WatchForSaveFailures();
@@ -124,7 +128,13 @@ public sealed partial class App : Application
     /// The service registrations: "when a class asks for X, give it this".
     /// Singleton = one shared instance for the whole app.
     /// </summary>
-    private static IHost BuildHost(TimeProvider time, ITaskStore store, TaskLoadResult loaded, TaskListMotion motion)
+    private static IHost BuildHost(
+        TimeProvider time,
+        ITaskStore store,
+        TaskLoadResult loaded,
+        ISettingsStore settingsStore,
+        AppSettings settings,
+        TaskListMotion motion)
     {
         // https://learn.microsoft.com/dotnet/core/extensions/generic-host
         var builder = Host.CreateApplicationBuilder();
@@ -137,6 +147,10 @@ public sealed partial class App : Application
         services.AddSingleton(_ => new TaskBoard(time, loaded.Document));
         services.AddSingleton<TaskAutoSaver>();
         services.AddSingleton<LocalDayWatcher>();
+
+        // Settings as loaded at start-up. Step 4c adds editing (and applying changes live).
+        services.AddSingleton(settingsStore);
+        services.AddSingleton(settings);
 
         // UI services
         services.AddSingleton<ScreenService>();

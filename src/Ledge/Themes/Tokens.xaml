@@ -30,9 +30,6 @@
   -->
   <Thickness x:Key="HoverZonePadding">8,4,8,8</Thickness>
 
-  <!-- Global hotkey default (DESIGN.md §5); configurable in Settings from M4 -->
-  <sys:String x:Key="DefaultHotkey">Win+Alt+L</sys:String>
-
   <!-- Motion (DESIGN.md §4) -->
   <sys:TimeSpan x:Key="ExpandDuration">0:0:0.220</sys:TimeSpan>
   <sys:TimeSpan x:Key="CollapseDuration">0:0:0.160</sys:TimeSpan>
