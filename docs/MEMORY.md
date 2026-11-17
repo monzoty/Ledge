@@ -12,12 +12,17 @@
 ## Current status
 
 - **Milestone:** M4, "Lives in the background", on branch `m4-background`.
-- **M4 is complete and merged into `main`** (2026-11-17). It covers the tray,
-  second launch, settings, the Settings window, the light theme and logging.
-- **Still open:** the hand-run M4 checklist (ROADMAP "Done when": reboot and
-  it's just there, configured). Nobody has run M4 by hand yet. Fix anything it
-  finds on a `fix/...` branch.
-- **Next:** M5, the focus timer.
+- **M4 is complete and merged into `main`** (2026-11-17). Its hand-run
+  checklist is still pending (reboot and it's just there, configured). Fix
+  anything it finds on a `fix/...` branch.
+- **M5 (focus timer)** is on branch `m5-focus-timer`.
+  - **5a** (Core `FocusSession` and `FocusTimer`, timestamp-based, plus 18
+    tests) is built, not yet committed.
+  - **Next steps:**
+    - 5b: the timer row in the panel
+    - 5c: the pill ring and `mm:ss`
+    - 5d: the notification
+    - 5e: hiding the pill over full-screen apps
 
 ## Milestone log
 
@@ -28,6 +33,7 @@
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
 | M4 Background app | ✅ | Tray, single-instance signal, settings.json, Settings window, light theme, file logging. Manual check still pending. |
+| M5 Focus timer | in progress | 5a (Core timer) built, uncommitted |
 
 ## Gotchas and lessons learned
 
@@ -42,6 +48,16 @@
   it ends. To find a hanging test, run each suspect alone with a time limit,
   or use `--blame-hang-timeout 30s`. Delete the dumps it writes to
   `tests/*/TestResults` afterwards.
+
+### Timers
+- **Compute, don't count.** Remaining time is
+  `Duration − (now − StartedAt − PausedTotal)`, recomputed on every tick, so
+  sleep can't make it drift.
+- **Line ticks up with the remaining time's whole seconds** (the first tick
+  after `remaining % 1 s`), so `mm:ss` changes on the second and zero is hit
+  exactly, even after part-second pauses.
+- **Clear the session inside the lock when finishing,** so two checks racing
+  each other (a tick and `CheckNow` on wake) can only finish it once.
 
 ### JSON (System.Text.Json)
 - **The default encoder escapes `+` as `+`,** along with every non-ASCII

@@ -7,7 +7,7 @@
 Branch naming: `m1-overlay-window`, `m2-hotkey-and-expand`, …
 Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 
-**Current milestone: M4**
+**Current milestone: M5**
 
 ---
 
@@ -111,8 +111,8 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 ## M5 — Focus timer
 **Goal:** a timer you can see without opening anything. [F1.4 timer, F1.6, F4.*]
 
-- [ ] Core: `FocusSession` + `IFocusTimer` / `FocusTimer` based on `TimeProvider` timestamps
-- [ ] Tests with `FakeTimeProvider`: pause/resume, a 10-minute sleep jump, finishes exactly once, replacing a session
+- [x] Core: `FocusSession` + `IFocusTimer` / `FocusTimer` based on `TimeProvider` timestamps
+- [x] Tests with `FakeTimeProvider`: pause/resume, a 10-minute sleep jump, finishes exactly once, replacing a session
 - [ ] Timer row: presets 15/25/50, start/pause/stop; Ctrl+Enter starts on the selected task
 - [ ] The pill shows a ring and `mm:ss` (136 × 28); paused state
 - [ ] Notification when finished (+ "Mark task done" for a linked task); pill pulse
