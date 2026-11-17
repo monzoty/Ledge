@@ -16,10 +16,10 @@
   checklist is still pending (reboot and it's just there, configured). Fix
   anything it finds on a `fix/...` branch.
 - **M5 (focus timer)** is on branch `m5-focus-timer`.
-  - **5a** (Core `FocusSession` and `FocusTimer`, timestamp-based, plus 18
-    tests) is built, not yet committed.
+  - **5a** (Core timer) is committed.
+  - **5b** (timer row, Ctrl+Enter, linked-task marker, replace question) is
+    built, tested and **seen running**, but not yet committed.
   - **Next steps:**
-    - 5b: the timer row in the panel
     - 5c: the pill ring and `mm:ss`
     - 5d: the notification
     - 5e: hiding the pill over full-screen apps
@@ -33,7 +33,7 @@
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
 | M4 Background app | ✅ | Tray, single-instance signal, settings.json, Settings window, light theme, file logging. Manual check still pending. |
-| M5 Focus timer | in progress | 5a (Core timer) built, uncommitted |
+| M5 Focus timer | in progress | 5a `1868964`; 5b built (uncommitted) |
 
 ## Gotchas and lessons learned
 
@@ -56,6 +56,14 @@
 - **Line ticks up with the remaining time's whole seconds** (the first tick
   after `remaining % 1 s`), so `mm:ss` changes on the second and zero is hit
   exactly, even after part-second pauses.
+- **Ticks can arrive a millisecond before the wall clock says the second has
+  passed.** Timers and `GetUtcNow` use different clocks. Without
+  `FocusTimer.ClockTolerance` (100 ms), the display lagged a second and the
+  session ended a second late. Unit tests with `FakeTimeProvider` can't show
+  this; it was found by running the app.
+- **xUnit installs its own `SynchronizationContext`,** so a ViewModel that reads
+  `SynchronizationContext.Current` posts its updates for later in tests. Pass
+  the UI context in explicitly (null in tests).
 - **Clear the session inside the lock when finishing,** so two checks racing
   each other (a tick and `CheckNow` on wake) can only finish it once.
 

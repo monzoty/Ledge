@@ -33,16 +33,20 @@ public sealed partial class TaskRowViewModel : ObservableObject
 
     /// <summary>Inline rename is open (PRD F3.6).</summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ToggleCommand), nameof(MoveCommand), nameof(DeleteCommand), nameof(BeginRenameCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ToggleCommand), nameof(MoveCommand), nameof(DeleteCommand), nameof(BeginRenameCommand), nameof(StartFocusCommand))]
     private bool _isEditing;
 
     /// <summary>The text in the rename box; becomes the title on commit.</summary>
     [ObservableProperty]
     private string _editText = string.Empty;
 
+    /// <summary>The focus timer is running (or paused) for this task: shows the amber stopwatch.</summary>
+    [ObservableProperty]
+    private bool _isLinkedToTimer;
+
     /// <summary>The delete animation is playing (DESIGN.md §4); the task is deleted when it ends.</summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ToggleCommand), nameof(MoveCommand), nameof(DeleteCommand), nameof(BeginRenameCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ToggleCommand), nameof(MoveCommand), nameof(DeleteCommand), nameof(BeginRenameCommand), nameof(StartFocusCommand))]
     private bool _isRemoving;
 
     public TaskRowViewModel(TaskItem task, TaskListViewModel owner)
@@ -75,6 +79,10 @@ public sealed partial class TaskRowViewModel : ObservableObject
     /// <summary>Trash icon or Del (PRD F3.4). Plays the remove animation first.</summary>
     [RelayCommand(CanExecute = nameof(IsIdle))]
     private Task DeleteAsync() => _owner.DeleteAsync(this);
+
+    /// <summary>Ctrl+Enter (DESIGN.md §5): a focus session for this task, with the selected preset.</summary>
+    [RelayCommand(CanExecute = nameof(IsIdle))]
+    private void StartFocus() => _owner.StartFocus(this);
 
     /// <summary>F2 or double-click: open the rename box with the current title.</summary>
     [RelayCommand(CanExecute = nameof(IsIdle))]

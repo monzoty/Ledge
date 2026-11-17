@@ -19,7 +19,7 @@
         UseLayoutRounding="True">
 
   <Window.Resources>
-    <converters:EnumToBoolConverter x:Key="EnumToBool" />
+    <converters:EqualsToBoolConverter x:Key="EqualsToBool" />
   </Window.Resources>
 
   <StackPanel Margin="{StaticResource SettingsPadding}">
@@ -133,13 +133,13 @@
       <UniformGrid Rows="1">
         <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme"
                      Content="{StaticResource ThemeSystem}"
-                     IsChecked="{Binding Theme, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static core:ThemeMode.System}}" />
+                     IsChecked="{Binding Theme, Converter={StaticResource EqualsToBool}, ConverterParameter={x:Static core:ThemeMode.System}}" />
         <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme"
                      Content="{StaticResource ThemeLight}"
-                     IsChecked="{Binding Theme, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static core:ThemeMode.Light}}" />
+                     IsChecked="{Binding Theme, Converter={StaticResource EqualsToBool}, ConverterParameter={x:Static core:ThemeMode.Light}}" />
         <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme"
                      Content="{StaticResource ThemeDark}"
-                     IsChecked="{Binding Theme, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static core:ThemeMode.Dark}}" />
+                     IsChecked="{Binding Theme, Converter={StaticResource EqualsToBool}, ConverterParameter={x:Static core:ThemeMode.Dark}}" />
       </UniformGrid>
     </Border>
   </StackPanel>

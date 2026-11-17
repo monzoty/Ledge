@@ -119,6 +119,30 @@ public sealed class FocusTimerTests : IDisposable
     }
 
     [Fact]
+    public void ATickAFewMillisecondsEarly_StillFinishesOnTime()
+    {
+        // Real Windows timers and the wall clock can disagree by a millisecond
+        // or so; found by running the app (M5 step 5b).
+        _timer.Start(TimeSpan.FromSeconds(10));
+        _time.Advance(TimeSpan.FromSeconds(10) - TimeSpan.FromMilliseconds(1));
+
+        _timer.CheckNow(); // as if the last tick fired 1 ms early
+
+        Assert.Equal(TimeSpan.Zero, Assert.Single(_finished).LateBy);
+    }
+
+    [Fact]
+    public void WellBeforeTheEnd_DoesNotFinishEarly()
+    {
+        _timer.Start(TimeSpan.FromSeconds(10));
+        _time.Advance(TimeSpan.FromSeconds(9.5));
+
+        _timer.CheckNow();
+
+        Assert.Empty(_finished);
+    }
+
+    [Fact]
     public void AfterFinishing_NothingTicks()
     {
         _timer.Start(TimeSpan.FromSeconds(3));

@@ -29,6 +29,7 @@ public sealed partial class TaskListViewModel : ObservableObject
     private readonly TaskBoard _board;
     private readonly TimeProvider _time;
     private readonly TaskListMotion _motion;
+    private readonly TimerViewModel _timer;
 
     [ObservableProperty]
     private string _quickAddText = string.Empty;
@@ -83,11 +84,26 @@ public sealed partial class TaskListViewModel : ObservableObject
     [ObservableProperty]
     private bool _isRenaming;
 
-    public TaskListViewModel(TaskBoard board, TimeProvider time, TaskListMotion motion, TaskLoadResult loaded)
+    public TaskListViewModel(
+        TaskBoard board,
+        TimeProvider time,
+        TaskListMotion motion,
+        TaskLoadResult loaded,
+        TimerViewModel timer)
     {
         _board = board;
         _time = time;
         _motion = motion;
+        _timer = timer;
+
+        // Keep the amber stopwatch on the right row when a session starts or ends.
+        _timer.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(TimerViewModel.LinkedTaskId))
+            {
+                MarkLinkedRow();
+            }
+        };
 
         ShowRestoredNotice = loaded.Outcome == TaskLoadOutcome.RestoredFromBackup;
         ShowResetNotice = loaded.Outcome == TaskLoadOutcome.ResetAfterCorruption;
@@ -132,6 +148,8 @@ public sealed partial class TaskListViewModel : ObservableObject
         Sync(Inbox, inbox);
         InboxOpenCount = inbox.Count(task => !task.IsDone);
         IsInboxEmpty = Inbox.Count == 0;
+
+        MarkLinkedRow();
     }
 
     /// <summary>
@@ -188,6 +206,19 @@ public sealed partial class TaskListViewModel : ObservableObject
     }
 
     internal void Rename(TaskRowViewModel row, string newTitle) => _board.Rename(row.Id, newTitle);
+
+    /// <summary>Ctrl+Enter on a row; the timer asks first if a session is already going.</summary>
+    internal void StartFocus(TaskRowViewModel row) => _timer.RequestStart(row.Id);
+
+    /// <summary>Exactly one row (or none) shows the stopwatch: the one the timer is for.</summary>
+    private void MarkLinkedRow()
+    {
+        var linked = _timer.LinkedTaskId;
+        foreach (var row in Today.Concat(Inbox))
+        {
+            row.IsLinkedToTimer = row.Id == linked;
+        }
+    }
 
     internal void OnEditingChanged() => IsRenaming = Today.Concat(Inbox).Any(row => row.IsEditing);
 

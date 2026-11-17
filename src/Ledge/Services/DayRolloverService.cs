@@ -1,4 +1,5 @@
 using System.Windows.Threading;
+using Ledge.Core.Abstractions;
 using Ledge.Core.Services;
 using Ledge.ViewModels;
 using Microsoft.Win32;
@@ -18,12 +19,14 @@ public sealed class DayRolloverService : IDisposable
 {
     private readonly LocalDayWatcher _watcher;
     private readonly TaskListViewModel _tasks;
+    private readonly IFocusTimer _focusTimer;
     private readonly Dispatcher _dispatcher;
 
-    public DayRolloverService(LocalDayWatcher watcher, TaskListViewModel tasks)
+    public DayRolloverService(LocalDayWatcher watcher, TaskListViewModel tasks, IFocusTimer focusTimer)
     {
         _watcher = watcher;
         _tasks = tasks;
+        _focusTimer = focusTimer;
 
         // Created on the UI thread (at start-up), so this is the UI dispatcher.
         _dispatcher = Dispatcher.CurrentDispatcher;
@@ -45,12 +48,17 @@ public sealed class DayRolloverService : IDisposable
         _watcher.DayChanged -= OnDayChanged;
     }
 
-    /// <summary>The PC woke up: midnight may have passed while it slept.</summary>
+    /// <summary>
+    /// The PC woke up: midnight may have passed while it slept, and a focus
+    /// session may have run out (PRD F4.5). Check both against the clock now
+    /// rather than waiting for the next timer tick.
+    /// </summary>
     private void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
     {
         if (e.Mode == PowerModes.Resume)
         {
             _watcher.Check();
+            _focusTimer.CheckNow();
         }
     }
 

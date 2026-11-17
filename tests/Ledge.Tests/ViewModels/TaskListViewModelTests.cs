@@ -13,18 +13,20 @@ public sealed class TaskListViewModelTests
     // are already covered by the Core tests.
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 11, 16, 10, 0, 0, TimeSpan.Zero));
     private readonly TaskBoard _board;
+    private readonly TimerViewModel _timer;
     private readonly TaskListViewModel _viewModel;
 
     public TaskListViewModelTests()
     {
         _board = new TaskBoard(_time);
+        _timer = new TimerViewModel(new FocusTimer(_time), uiThread: null);
         _viewModel = CreateViewModel();
     }
 
     private IEnumerable<string> TodayTitles => _viewModel.Today.Select(row => row.Title);
 
     private TaskListViewModel CreateViewModel(TaskLoadOutcome outcome = TaskLoadOutcome.Loaded) =>
-        new(_board, _time, new TaskListMotion(RemoveDuration), new TaskLoadResult(_board.Document, outcome));
+        new(_board, _time, new TaskListMotion(RemoveDuration), new TaskLoadResult(_board.Document, outcome), _timer);
 
     private TaskRowViewModel AddRow(string title)
     {
@@ -461,6 +463,72 @@ public sealed class TaskListViewModelTests
         Assert.False(viewModel.ShowDataNotice);
         Assert.False(viewModel.ShowUndoHint);
         Assert.False(_board.CanUndoDelete);
+    }
+
+    // --- Focus timer link ------------------------------------------------------------
+
+    [Fact]
+    public void StartFocus_StartsATimerLinkedToTheRow_AndMarksIt()
+    {
+        var other = AddRow("Other");
+        var row = AddRow("Focus on me");
+
+        row.StartFocusCommand.Execute(null);
+
+        Assert.True(_timer.IsRunning);
+        Assert.Equal(row.Id, _timer.LinkedTaskId);
+        Assert.True(row.IsLinkedToTimer);
+        Assert.False(other.IsLinkedToTimer);
+    }
+
+    [Fact]
+    public void StoppingTheTimer_RemovesTheMark()
+    {
+        var row = AddRow("Task");
+        row.StartFocusCommand.Execute(null);
+
+        _timer.StopCommand.Execute(null);
+
+        Assert.False(row.IsLinkedToTimer);
+    }
+
+    [Fact]
+    public void StartFocus_OnAnotherRowWhileRunning_AsksFirst()
+    {
+        var first = AddRow("First");
+        var second = AddRow("Second");
+        first.StartFocusCommand.Execute(null);
+
+        second.StartFocusCommand.Execute(null);
+
+        Assert.True(_timer.IsAskingToReplace);
+        Assert.True(first.IsLinkedToTimer);
+
+        _timer.ConfirmReplaceCommand.Execute(null);
+
+        Assert.False(first.IsLinkedToTimer);
+        Assert.True(second.IsLinkedToTimer);
+    }
+
+    [Fact]
+    public void LinkedRow_KeepsItsMark_AfterBeingMovedToTheInbox()
+    {
+        var row = AddRow("Task");
+        row.StartFocusCommand.Execute(null);
+
+        row.MoveCommand.Execute(null);
+
+        Assert.True(_viewModel.Inbox[0].IsLinkedToTimer); // a new row object in the Inbox
+    }
+
+    [Fact]
+    public void WhileRenaming_CtrlEnterIsDisabled()
+    {
+        var row = AddRow("Task");
+
+        row.BeginRenameCommand.Execute(null);
+
+        Assert.False(row.StartFocusCommand.CanExecute(null));
     }
 
     // --- Day change -------------------------------------------------------------

@@ -121,6 +121,32 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
   8 DIP corners, in the same font and position as the title, with all text
   selected. Enter saves and Esc cancels. Clicking elsewhere or closing the
   panel **saves**. An empty title keeps the old one.
+- **Timer row** (decided 2026-11-17): 32 high, **12 DIP** below quick-add.
+  Below it sits a 1 DIP `Border`-colour divider, also 12 DIP below.
+  - **Layout:**
+    - Stopwatch icon at 16 DIP, `TextSecondary`, 12 DIP in, with 8 DIP to
+      what follows (the same spacing as a task row's checkbox).
+    - Play / pause / stop icons at 16 DIP, `TextSecondary`, 8 DIP apart, the
+      last one 12 DIP from the right edge.
+  - **Idle:** "Focus" (`Body`, `TextPrimary`), then 8 DIP later the preset
+    chips **15 · 25 · 50**, and ▶ at the right.
+    - Chips are 24 high, 8 DIP side padding, 4 DIP apart, `Body`, 8 DIP
+      corners, on a `Surface` background (like the theme picker; derived).
+    - The selected chip has a 1 DIP `Accent` outline and `TextPrimary`; the
+      others `TextSecondary`. 25 is selected at start-up.
+    - Click a chip to select it, then ▶ to start (unlinked).
+  - **Running:** the remaining time `mm:ss` (`Body`, tabular digits,
+    `TextPrimary`), then ❚❚ and ■.
+  - **Paused:** the time in `TextSecondary`, then ▶ (resume) and ■.
+  - **Replacing a running timer** (PRD F4.7): the row turns into the
+    question, `Body` `TextPrimary`, wrapping. Below it, right-aligned and 8 DIP
+    apart, sit **Start new** and **Keep current**, styled as chips; "Start new"
+    has the `Accent` outline. Enter means Start new, Esc means Keep current
+    (Esc doesn't close the panel then).
+- **Linked task marker:** a 16 DIP stopwatch in `Accent` at the task row's
+  right end, 12 DIP from the edge, while its timer runs or is paused. It's
+  hidden while the mouse is over the row, where the delete and move icons
+  appear.
 - **Data notice** (task file restored or reset): a line at the **bottom of
   the panel**, where the undo hint goes, in `Small` text in `Danger`. It wraps
   to as many lines as it needs, at least one row high (32), 12 DIP in. It shows
@@ -255,7 +281,7 @@ change. There is still a notification when the timer ends.
 | `Del` | Delete (undo with `Ctrl+Z`) |
 | `F2` | Rename |
 | `Ctrl+I` | Move between Today ↔ Inbox |
-| `Ctrl+Enter` | Start a 25-min focus session on the selected task |
+| `Ctrl+Enter` | Start a focus session on the selected task, using the selected preset (25 min unless changed) |
 | `Ctrl+N` or `/` | Jump to quick-add |
 | `Esc` | Cancel rename → else close panel |
 
@@ -283,6 +309,8 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Timer finished: body (unlinked) | "{minutes} minutes of focus. Time for a short break." |
 | Timer finished: action | "Mark task done" |
 | Replace running timer | "Stop the current session and start a new one?" · buttons "Start new" / "Keep current" |
+| Timer row label | "Focus" |
+| Timer, names for screen readers only (not shown) | "Start focus session" · "Pause" · "Resume" · "Stop" · "{n} minutes" (chips) · "Linked to the focus timer" (marker) |
 | Hotkey taken | "{hotkey} is already used by another app. Pick a different shortcut in Settings." |
 | Data restored from backup | "Your task file couldn't be read, so Ledge restored the last backup." |
 | Data reset (file and backup unreadable) | "Your task file and its backup couldn't be read, so Ledge started with an empty list. The damaged files were kept in the Ledge data folder." |

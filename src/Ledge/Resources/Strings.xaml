@@ -22,6 +22,19 @@
   <sys:String x:Key="MoveToToday">Move to Today</sys:String>
   <sys:String x:Key="DeleteTask">Delete</sys:String>
   <sys:String x:Key="UndoDeleteHint">Task deleted · Ctrl+Z to undo</sys:String>
+  <!-- Focus timer (DESIGN.md §6) -->
+  <sys:String x:Key="TimerFocus">Focus</sys:String>
+  <sys:String x:Key="TimerReplaceQuestion">Stop the current session and start a new one?</sys:String>
+  <sys:String x:Key="TimerStartNew">Start new</sys:String>
+  <sys:String x:Key="TimerKeepCurrent">Keep current</sys:String>
+  <!-- Read by screen readers only, not shown -->
+  <sys:String x:Key="TimerStartName">Start focus session</sys:String>
+  <sys:String x:Key="TimerPauseName">Pause</sys:String>
+  <sys:String x:Key="TimerResumeName">Resume</sys:String>
+  <sys:String x:Key="TimerStopName">Stop</sys:String>
+  <!-- {0} = 15, 25 or 50 -->
+  <sys:String x:Key="TimerPresetNameFormat">{0} minutes</sys:String>
+  <sys:String x:Key="TimerLinkedName">Linked to the focus timer</sys:String>
   <!-- Tray menu (DESIGN.md §6); the tooltip is AppName -->
   <sys:String x:Key="TrayOpen">Open</sys:String>
   <sys:String x:Key="TraySettings">Settings</sys:String>

@@ -198,6 +198,8 @@ public sealed partial class App : Application
         services.AddSingleton(_ => new TaskBoard(time, loaded.Document));
         services.AddSingleton<TaskAutoSaver>();
         services.AddSingleton<LocalDayWatcher>();
+        services.AddSingleton<FocusTimer>();
+        services.AddSingleton<IFocusTimer>(sp => sp.GetRequiredService<FocusTimer>());
 
         // Settings: SettingsService owns the live values and saves every change.
         services.AddSingleton(settingsStore);
@@ -216,6 +218,10 @@ public sealed partial class App : Application
         // ViewModels and windows. Settings is "transient": a fresh window (and
         // ViewModel) each time it's opened, since a closed WPF window can't be shown again.
         services.AddSingleton(motion);
+
+        // Resolved while starting up, on the UI thread, so Current is the UI
+        // thread's context: timer updates get posted back to it.
+        services.AddSingleton(sp => new TimerViewModel(sp.GetRequiredService<IFocusTimer>(), SynchronizationContext.Current));
         services.AddSingleton<TaskListViewModel>();
         services.AddSingleton<PillWindow>();
         services.AddTransient<SettingsViewModel>();

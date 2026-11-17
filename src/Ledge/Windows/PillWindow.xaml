@@ -173,6 +173,14 @@
           </Border.InputBindings>
           <DockPanel>
             <views:QuickAddBox x:Name="QuickAdd" DockPanel.Dock="Top" />
+
+            <!-- Focus timer row and the 1 DIP divider under it (DESIGN.md §2 "Timer row").
+                 DataContext: TimerViewModel (code-behind). -->
+            <views:TimerRow x:Name="TimerRow" DockPanel.Dock="Top" Margin="{StaticResource TimerRowMargin}" />
+            <Border DockPanel.Dock="Top"
+                    Height="{StaticResource DividerThickness}"
+                    Margin="{StaticResource TimerDividerMargin}"
+                    Background="{DynamicResource BorderBrush}" />
             <!--
               Undo hint (DESIGN.md §2): bottom of the panel, below the lists, one
               row high. Docked outside the ScrollViewer so it's always in view.

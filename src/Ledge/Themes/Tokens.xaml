@@ -105,6 +105,21 @@
   <Thickness x:Key="MenuPadding">4</Thickness>
   <Thickness x:Key="MenuItemPadding">12,0,12,0</Thickness>
 
+  <!-- Timer row (DESIGN.md §2 "Timer row") -->
+  <Thickness x:Key="TimerRowMargin">0,12,0,0</Thickness>
+  <Thickness x:Key="TimerDividerMargin">0,12,0,0</Thickness>
+  <sys:Double x:Key="DividerThickness">1</sys:Double>
+  <sys:Double x:Key="ChipHeight">24</sys:Double>
+  <Thickness x:Key="ChipPadding">8,0,8,0</Thickness>
+  <Thickness x:Key="ChipGap">0,0,4,0</Thickness>
+  <Thickness x:Key="ChipBorderThickness">1</Thickness>
+  <!-- Between the play/pause and stop icons, and between the two replace buttons -->
+  <Thickness x:Key="TimerButtonGap">0,0,8,0</Thickness>
+  <!-- The replace question: its buttons sit 8 below the text -->
+  <Thickness x:Key="TimerQuestionButtonsMargin">0,8,0,0</Thickness>
+  <!-- The question uses the row's left/right insets (12) -->
+  <Thickness x:Key="TimerQuestionMargin">12,0,12,0</Thickness>
+
   <!-- Settings window (DESIGN.md §5 "Settings window") -->
   <sys:Double x:Key="SettingsWindowWidth">400</sys:Double>
   <Thickness x:Key="SettingsPadding">24</Thickness>
@@ -161,6 +176,11 @@
   <sys:String x:Key="GlyphMoveToInbox">&#xE7B8;</sys:String>
   <sys:String x:Key="GlyphMoveToToday">&#xE787;</sys:String>
   <sys:String x:Key="GlyphDelete">&#xE74D;</sys:String>
+  <!-- Focus timer (DESIGN.md §2 "Timer row") -->
+  <sys:String x:Key="GlyphStopwatch">&#xE916;</sys:String>
+  <sys:String x:Key="GlyphPlay">&#xE768;</sys:String>
+  <sys:String x:Key="GlyphPause">&#xE769;</sys:String>
+  <sys:String x:Key="GlyphStop">&#xE71A;</sys:String>
   <!-- Points right (▸); rotated 90° when the Inbox is open (▾) -->
   <sys:String x:Key="GlyphChevron">&#xE76C;</sys:String>
 

@@ -116,4 +116,94 @@
     </Setter>
   </Style>
 
+  <!--
+    Icon button (timer play / pause / stop): just the 16 DIP glyph, keyboard
+    focusable (Tab), with the focus ring for keyboard users.
+  -->
+  <Style x:Key="IconButton" TargetType="Button">
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRingVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="Transparent">
+            <ContentPresenter />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The glyph inside an IconButton: 16 DIP, TextSecondary (DESIGN.md §2 "Timer row") -->
+  <Style x:Key="IconGlyph" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+    <Setter Property="FontSize" Value="{StaticResource PanelIconSize}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <!--
+    Preset chip (15 / 25 / 50): a RadioButton, so exactly one is selected.
+    24 high, 8 DIP sides, Surface background, 8 DIP corners; the selected one
+    has the 1 DIP Accent outline and TextPrimary (like the theme picker).
+  -->
+  <Style x:Key="ChipRadio" TargetType="RadioButton">
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRingVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Border x:Name="Chip"
+                  Height="{StaticResource ChipHeight}"
+                  Padding="{StaticResource ChipPadding}"
+                  CornerRadius="{StaticResource RowCornerRadius}"
+                  Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="Transparent"
+                  BorderThickness="{StaticResource ChipBorderThickness}">
+            <TextBlock x:Name="Label"
+                       Text="{TemplateBinding Content}"
+                       FontFamily="{StaticResource UiFont}"
+                       FontSize="{StaticResource BodyTextSize}"
+                       Typography.NumeralAlignment="Tabular"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+              <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- A button that looks like a chip ("Keep current"). -->
+  <Style x:Key="ChipButton" TargetType="Button">
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRingVisual}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Height="{StaticResource ChipHeight}"
+                  Padding="{StaticResource ChipPadding}"
+                  CornerRadius="{StaticResource RowCornerRadius}"
+                  Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{StaticResource ChipBorderThickness}">
+            <TextBlock Text="{TemplateBinding Content}"
+                       FontFamily="{StaticResource UiFont}"
+                       FontSize="{StaticResource BodyTextSize}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The main choice ("Start new"): a chip with the Accent outline. -->
+  <Style x:Key="PrimaryChipButton" TargetType="Button" BasedOn="{StaticResource ChipButton}">
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
 </ResourceDictionary>

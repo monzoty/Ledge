@@ -55,6 +55,7 @@ public sealed partial class PillWindow : Window
     private readonly TimeProvider _time;
     private readonly SettingsService _settings;
     private readonly ILogger<PillWindow> _log;
+    private readonly TimerViewModel _timer;
 
     /// <summary>When the panel last closed because another window was activated.</summary>
     private long _closedByDeactivationAt;
@@ -80,9 +81,11 @@ public sealed partial class PillWindow : Window
         TimeProvider time,
         SettingsService settings,
         ThemeService theme,
+        TimerViewModel timer,
         ILogger<PillWindow> log)
     {
         _log = log;
+        _timer = timer;
         _screen = screen;
         _hotkey = hotkey;
         _time = time;
@@ -107,6 +110,17 @@ public sealed partial class PillWindow : Window
 
         // The pill's "n today" / "All clear" reads the same ViewModel.
         PillContent.DataContext = tasks;
+
+        // The timer row has its own ViewModel; the question it can show
+        // ("Stop the current session…?") changes the panel's height.
+        TimerRow.DataContext = timer;
+        TimerRow.SizeChanged += (_, e) =>
+        {
+            if (e.HeightChanged)
+            {
+                ResizeToContentIfOpen();
+            }
+        };
 
         _returnFocusTimer = new DispatcherTimer { Interval = ReturnFocusPollInterval };
         _returnFocusTimer.Tick += (_, _) => TryReturnFocus();
@@ -178,6 +192,23 @@ public sealed partial class PillWindow : Window
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
         base.OnPreviewKeyDown(e);
+
+        // While asking "Stop the current session and start a new one?":
+        // Enter = Start new, Esc = Keep current, and the panel stays open.
+        if (IsExpanded && _timer.IsAskingToReplace && e.Key is Key.Enter or Key.Escape)
+        {
+            e.Handled = true;
+            if (e.Key == Key.Enter)
+            {
+                _timer.ConfirmReplaceCommand.Execute(null);
+            }
+            else
+            {
+                _timer.KeepCurrentCommand.Execute(null);
+            }
+
+            return;
+        }
 
         // Esc: cancel a rename first (the rename box handles that itself),
         // otherwise close the panel (DESIGN.md §5).

@@ -88,6 +88,7 @@
         <KeyBinding Key="Delete" Command="{Binding DeleteCommand}" />
         <KeyBinding Key="F2" Command="{Binding BeginRenameCommand}" />
         <KeyBinding Key="I" Modifiers="Control" Command="{Binding MoveCommand}" />
+        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding StartFocusCommand}" />
       </Border.InputBindings>
 
       <Grid>
@@ -184,6 +185,22 @@
         </Button>
 
         <!--
+          Linked to the focus timer (DESIGN.md §2 "Linked task marker"): an amber
+          stopwatch in the move icon's spot, 12 DIP from the edge. Shown by the
+          IsLinkedToTimer trigger below and hidden again while hovered.
+        -->
+        <TextBlock x:Name="LinkedMark"
+                   Grid.Column="3"
+                   Margin="{StaticResource TaskRowActionMargin}"
+                   Text="{StaticResource GlyphStopwatch}"
+                   FontFamily="{StaticResource IconFont}"
+                   FontSize="{StaticResource PanelIconSize}"
+                   Foreground="{DynamicResource AccentBrush}"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed"
+                   AutomationProperties.Name="{StaticResource TimerLinkedName}" />
+
+        <!--
           Keyboard focus ring (DESIGN.md §3): drawn ON TOP of the row as an
           overlay, so turning it on doesn't shift the content by 2 DIP.
         -->
@@ -197,11 +214,21 @@
     </Border>
 
     <DataTemplate.Triggers>
+      <!--
+        Order matters: when several triggers set the same property, the LATER
+        one wins. So "linked" shows the marker, and "hovered" (below it) hides
+        it again to make room for the icons.
+      -->
+      <DataTrigger Binding="{Binding IsLinkedToTimer}" Value="True">
+        <Setter TargetName="LinkedMark" Property="Visibility" Value="Visible" />
+      </DataTrigger>
+
       <!-- Hover: Surface background (DESIGN.md §3) and the two icons. -->
       <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
         <Setter TargetName="Row" Property="Background" Value="{DynamicResource SurfaceBrush}" />
         <Setter TargetName="DeleteButton" Property="Visibility" Value="Visible" />
         <Setter TargetName="MoveButton" Property="Visibility" Value="Visible" />
+        <Setter TargetName="LinkedMark" Property="Visibility" Value="Collapsed" />
       </Trigger>
 
       <!-- The trash turns Danger while the mouse is on it (DESIGN.md §2). -->

@@ -16,6 +16,15 @@ namespace Ledge.Core.Services;
 /// </remarks>
 public sealed class FocusTimer : IFocusTimer, IDisposable
 {
+    /// <summary>
+    /// How early a tick may arrive and still count as "on the second". The
+    /// timer that fires ticks and the wall clock (GetUtcNow) are different
+    /// Windows clocks, so a tick due at exactly 24:59 can see 24:59.0005 left.
+    /// Without this, the display would lag a second and the session would end
+    /// a second late. Found by running the app (M5 step 5b).
+    /// </summary>
+    public static readonly TimeSpan ClockTolerance = TimeSpan.FromMilliseconds(100);
+
     /// <summary>The display shows whole seconds (mm:ss).</summary>
     private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(1);
 
@@ -143,11 +152,13 @@ public sealed class FocusTimer : IFocusTimer, IDisposable
             }
 
             var now = _time.GetUtcNow();
-            if (running.RemainingAt(now) == TimeSpan.Zero)
+            if (running.RemainingAt(now) <= ClockTolerance)
             {
                 _session = null;
                 StopTicking();
-                finished = new FocusFinishedEventArgs(running, now - running.EndsAt);
+                // A tick a few ms early would give a tiny negative "late"; report that as on time.
+                var lateBy = now - running.EndsAt;
+                finished = new FocusFinishedEventArgs(running, lateBy > TimeSpan.Zero ? lateBy : TimeSpan.Zero);
             }
         }
 
