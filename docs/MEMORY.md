@@ -12,15 +12,14 @@
 ## Current status
 
 - **Milestone:** M4, "Lives in the background", on branch `m4-background`.
-- **Steps 4a and 4b** are built and unit-tested, but not yet checked by hand
-  or committed. Commit them as two separate commits.
-  - 4a: the tray icon (Open / Quit, left-click toggles), a second launch
-    opening the running panel, and Alt+F4 closing only the panel.
-  - 4b: `AppSettings` and `settings.json` through a shared `JsonFile<T>`. The
-    hotkey is now read from the settings.
+- **Committed:** 4a (tray, second launch, Alt+F4) and 4b (`settings.json` via
+  `JsonFile<T>`).
+- **Step 4c** (Settings window) is built and unit-tested, but not yet checked
+  by hand or committed. It covers live shortcut recording, Start with Windows
+  (HKCU Run key) and the theme picker. The theme choice is saved, but the
+  light colours come in 4d.
 - **Next:**
-  - 4c: Settings window
-  - 4d: light theme
+  - 4d: light theme and following Windows
   - 4e: file logging
 
 ## Milestone log
@@ -31,7 +30,7 @@
 | M1 Overlay window | ✅ | Tool window, no-activate, click-through, PerMonitorV2, single instance |
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
-| M4 Background app | in progress | 4a and 4b built (uncommitted) |
+| M4 Background app | in progress | 4a `8eb6cdd`, 4b `ac2eb1a`; 4c built (uncommitted) |
 
 ## Gotchas and lessons learned
 
@@ -89,6 +88,19 @@
   Pass `false`.
 - **Clicking the tray icon activates the taskbar first,** which closes an open
   panel. A short grace period stops the same click from reopening it.
+- **A registered global hotkey swallows its keys everywhere,** including in
+  our own Settings window. Suspend it while recording a new shortcut.
+- **Win+L locks the PC** and Windows reserves other Win combinations; they
+  can't be captured or registered. `TryChange` reports them as "taken".
+- **WPF's `KeyConverter` writes the number-row keys as digits** ("1", not
+  "D1"), and reads them back correctly.
+- **Setting an `[ObservableProperty]` backing field directly** gives the
+  MVVMTK0034 warning, which is an error here. To load values without triggering
+  the `On…Changed` hooks, use an "initialising" flag.
+- **A closed WPF window can't be shown again.** Register it as transient and
+  create a new one each time.
+- **A click on a non-focusable element doesn't move keyboard focus,** so "click
+  elsewhere cancels" needs a window-level `PreviewMouseDown`.
 
 ### Tooling (PowerShell 5.1)
 - **`Set-Content -Encoding utf8` adds a BOM,** which fails `dotnet format`

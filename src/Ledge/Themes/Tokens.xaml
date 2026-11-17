@@ -105,6 +105,28 @@
   <Thickness x:Key="MenuPadding">4</Thickness>
   <Thickness x:Key="MenuItemPadding">12,0,12,0</Thickness>
 
+  <!-- Settings window (DESIGN.md §5 "Settings window") -->
+  <sys:Double x:Key="SettingsWindowWidth">400</sys:Double>
+  <Thickness x:Key="SettingsPadding">24</Thickness>
+  <!-- Label → its control: 8; between settings: 16 (derived from the spacing unit) -->
+  <Thickness x:Key="SettingsLabelMargin">0,0,0,8</Thickness>
+  <Thickness x:Key="SettingsSectionMargin">0,16,0,0</Thickness>
+  <!-- A label that starts a new setting: 16 above, 8 to its control -->
+  <Thickness x:Key="SettingsSectionLabelMargin">0,16,0,8</Thickness>
+  <!-- Hint / problem text under the shortcut box: one spacing unit below it -->
+  <Thickness x:Key="SettingsHintMargin">0,4,0,0</Thickness>
+  <!-- Toggle switch: 40 × 20, fully rounded; 12 DIP thumb, 4 DIP inset -->
+  <sys:Double x:Key="ToggleWidth">40</sys:Double>
+  <sys:Double x:Key="ToggleHeight">20</sys:Double>
+  <CornerRadius x:Key="ToggleCornerRadius">10</CornerRadius>
+  <sys:Double x:Key="ToggleThumbSize">12</sys:Double>
+  <Thickness x:Key="ToggleThumbInset">4,0,4,0</Thickness>
+  <Thickness x:Key="ToggleBorderThickness">1</Thickness>
+  <!-- Segmented control: segments 32 high, 12 DIP sides, 1 DIP Accent outline when selected -->
+  <sys:Double x:Key="SegmentHeight">32</sys:Double>
+  <Thickness x:Key="SegmentPadding">12,0,12,0</Thickness>
+  <Thickness x:Key="SegmentBorderThickness">1</Thickness>
+
   <!-- Thin overlay scrollbar (DESIGN.md §2): 4 wide; radius = half the width (derived) -->
   <sys:Double x:Key="ScrollBarWidth">4</sys:Double>
   <CornerRadius x:Key="ScrollBarCornerRadius">2</CornerRadius>

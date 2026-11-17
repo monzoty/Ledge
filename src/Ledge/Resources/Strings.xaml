@@ -26,6 +26,19 @@
   <sys:String x:Key="TrayOpen">Open</sys:String>
   <sys:String x:Key="TraySettings">Settings</sys:String>
   <sys:String x:Key="TrayQuit">Quit</sys:String>
+  <!-- Settings window (DESIGN.md §6) -->
+  <sys:String x:Key="SettingsTitle">Ledge settings</sys:String>
+  <sys:String x:Key="SettingsShortcut">Shortcut</sys:String>
+  <sys:String x:Key="SettingsShortcutHint">Opens Ledge from anywhere. Click, then press the keys.</sys:String>
+  <sys:String x:Key="SettingsShortcutRecording">Press a shortcut…</sys:String>
+  <sys:String x:Key="SettingsShortcutInvalid">Use Win or Ctrl+Alt together with a key.</sys:String>
+  <!-- {0} = the shortcut, e.g. "Win + Shift + K" -->
+  <sys:String x:Key="SettingsShortcutTaken">{0} is already used by another app.</sys:String>
+  <sys:String x:Key="SettingsStartWithWindows">Start with Windows</sys:String>
+  <sys:String x:Key="SettingsTheme">Theme</sys:String>
+  <sys:String x:Key="ThemeSystem">System</sys:String>
+  <sys:String x:Key="ThemeLight">Light</sys:String>
+  <sys:String x:Key="ThemeDark">Dark</sys:String>
   <!-- Data notices (DESIGN.md §6) -->
   <sys:String x:Key="DataRestoredNotice">Your task file couldn't be read, so Ledge restored the last backup.</sys:String>
   <sys:String x:Key="DataResetNotice">Your task file and its backup couldn't be read, so Ledge started with an empty list. The damaged files were kept in the Ledge data folder.</sys:String>

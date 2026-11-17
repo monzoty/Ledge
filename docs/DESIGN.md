@@ -213,6 +213,36 @@ change. There is still a notification when the timer ends.
     padding, `Body` text in `TextPrimary`, with a `Surface` background and
     8 DIP corners when highlighted.
 - **Alt+F4 on the panel** closes the panel like Esc. Only **Quit** exits Ledge (PRD F5.4).
+- **Settings window** (decided 2026-11-17; opened from the tray):
+  - **Window:** a standard window with the system title bar "Ledge settings",
+    made dark through the Windows dark-title-bar API. Fixed **400 DIP** wide,
+    height fits the content, **24 DIP** padding, `Background` colour, panel
+    fonts. Centred on screen and shown in the taskbar while open. Only one is
+    open at a time; opening it again brings it to the front.
+  - **No Save button:** every change applies and saves at once.
+  - **Layout:** each setting is a label (`Body`, `TextPrimary`) with its control
+    **8 DIP** below; **16 DIP** between settings (derived from the spacing unit).
+  - **Shortcut box:** 36 high (like quick-add), `Surface`, 8 DIP corners,
+    12 DIP side padding, `Body` text such as "Win + Alt + L". Click it to
+    record: it shows "Press a shortcut…" and the 2 DIP `FocusRing`. The new
+    shortcut applies as soon as it's valid and free. Esc or clicking elsewhere
+    cancels.
+    - **Allowed:** must include **Win**, or **Ctrl+Alt** together (Shift
+      optional), plus one non-modifier key. That rules out Alt+letter,
+      Ctrl+letter and Ctrl+Shift+letter, which apps use for their own menus
+      and commands.
+    - **Problems:** an invalid or already-taken shortcut shows a `Small`
+      message in `Danger` under the box, and the old shortcut stays active.
+      Below the box sits a `Small` `TextSecondary` hint, 4 DIP under it
+      (derived). A problem message replaces the hint in the same spot.
+  - **Start with Windows:** a toggle switch, 40×20 with fully rounded ends.
+    - Off: `Surface` track, 1 DIP `Border` outline, `TextSecondary` thumb.
+    - On: `Accent` track with a `Background`-coloured thumb.
+    - The thumb is 12 DIP with 4 DIP inset (derived). It switches instantly.
+  - **Theme:** a segmented control, "System | Light | Dark", on a `Surface`
+    background with 8 DIP corners. Segments are 32 high with 12 DIP side
+    padding. The selected segment has a 1 DIP `Accent` outline and
+    `TextPrimary` text; the others use `TextSecondary`.
 - **Keyboard shortcuts inside the panel:**
 
 | Key | Action |
@@ -240,6 +270,11 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Move action tooltips | "Move to Inbox" / "Move to Today" |
 | Delete action tooltip | "Delete" |
 | Tray menu | "Open" · "Settings" · "Quit"; tooltip "Ledge" |
+| Settings window title | "Ledge settings" |
+| Settings: shortcut | "Shortcut" · hint "Opens Ledge from anywhere. Click, then press the keys." · while recording "Press a shortcut…" |
+| Settings: shortcut invalid | "Use Win or Ctrl+Alt together with a key." |
+| Settings: shortcut taken | "{hotkey} is already used by another app." |
+| Settings: other labels | "Start with Windows" · "Theme" · "System" / "Light" / "Dark" |
 | Pill, nothing open | "All clear" |
 | Pill, tasks open | "{n} today" |
 | Timer finished: title | "Focus session done" |

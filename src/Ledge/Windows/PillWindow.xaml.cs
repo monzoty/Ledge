@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Ledge.Core.Models;
+using Ledge.Core.Services;
 using Ledge.Interop;
 using Ledge.Services;
 using Ledge.ViewModels;
@@ -51,7 +52,7 @@ public sealed partial class PillWindow : Window
     private static readonly TimeSpan TrayClickGrace = TimeSpan.FromMilliseconds(500);
 
     private readonly TimeProvider _time;
-    private readonly AppSettings _settings;
+    private readonly SettingsService _settings;
 
     /// <summary>When the panel last closed because another window was activated.</summary>
     private long _closedByDeactivationAt;
@@ -75,7 +76,7 @@ public sealed partial class PillWindow : Window
         HotkeyService hotkey,
         TaskListViewModel tasks,
         TimeProvider time,
-        AppSettings settings)
+        SettingsService settings)
     {
         _screen = screen;
         _hotkey = hotkey;
@@ -260,12 +261,12 @@ public sealed partial class PillWindow : Window
     /// </summary>
     private void RegisterHotkey()
     {
-        var text = _settings.Hotkey;
-        if (TryParseHotkey(text) is not { } gesture)
+        var text = _settings.Current.Hotkey;
+        if (HotkeyText.Parse(text) is not { } gesture)
         {
             // A hand-edited settings.json with a hotkey we can't read: use the default.
             text = AppSettings.DefaultHotkey;
-            gesture = TryParseHotkey(text)!;
+            gesture = HotkeyText.Parse(text)!;
         }
 
         if (_hotkey.TryRegister(gesture))
@@ -283,24 +284,6 @@ public sealed partial class PillWindow : Window
         // Show it after start-up finishes, so the pill appears first.
         Dispatcher.BeginInvoke(() =>
             MessageBox.Show(message, (string)FindResource("AppName"), MessageBoxButton.OK, MessageBoxImage.Warning));
-    }
-
-    /// <summary>
-    /// "Win+Alt+L" → a KeyGesture, or null if the text isn't a valid shortcut.
-    /// WPF's converter throws for unknown keys, and KeyGesture itself refuses
-    /// combinations Windows can't use (e.g. a letter with no modifier).
-    /// https://learn.microsoft.com/dotnet/api/system.windows.input.keygestureconverter
-    /// </summary>
-    private static KeyGesture? TryParseHotkey(string text)
-    {
-        try
-        {
-            return new KeyGestureConverter().ConvertFromInvariantString(text) as KeyGesture;
-        }
-        catch (Exception ex) when (ex is NotSupportedException or ArgumentException)
-        {
-            return null;
-        }
     }
 
     /// <summary>Tray icon left-click: like the hotkey, minus the click that just closed the panel.</summary>

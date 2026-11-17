@@ -10,6 +10,7 @@
         <ResourceDictionary Source="Themes/ScrollViewer.xaml" />
         <ResourceDictionary Source="Views/TaskListResources.xaml" />
         <ResourceDictionary Source="Themes/TrayMenu.xaml" />
+        <ResourceDictionary Source="Themes/Controls.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

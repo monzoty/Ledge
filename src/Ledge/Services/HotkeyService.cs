@@ -11,13 +11,14 @@ namespace Ledge.Services;
 /// whichever app has focus. Owns a hidden message-only window that receives
 /// WM_HOTKEY, so it doesn't depend on any visible window.
 /// </summary>
-public sealed class HotkeyService : IDisposable
+public sealed class HotkeyService : IGlobalHotkey, IDisposable
 {
     /// <summary>Our own ID for the hotkey; WM_HOTKEY reports it back in wParam.</summary>
     private const int HotkeyId = 1;
 
     private readonly HwndSource _messageWindow;
     private bool _isRegistered;
+    private bool _isSuspended;
 
     public HotkeyService()
     {
@@ -40,30 +41,70 @@ public sealed class HotkeyService : IDisposable
     /// <summary>Raised on the UI thread when the hotkey is pressed.</summary>
     public event EventHandler? Pressed;
 
+    /// <inheritdoc />
+    public KeyGesture? Current { get; private set; }
+
     /// <summary>
-    /// Registers the hotkey. Returns false if another app already uses it,
-    /// so the caller can tell the user; throws for any other failure.
+    /// Registers the hotkey at start-up. Returns false if another app already
+    /// uses it, so the caller can tell the user; throws for any other failure.
     /// </summary>
     public bool TryRegister(KeyGesture gesture)
     {
         Unregister();
 
-        var modifiers = ToNativeModifiers(gesture.Modifiers) | NativeMethods.ModNoRepeat;
-        var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(gesture.Key);
-
-        if (NativeMethods.RegisterHotKey(_messageWindow.Handle, HotkeyId, modifiers, virtualKey))
+        if (!Register(gesture))
         {
-            _isRegistered = true;
-            return true;
-        }
-
-        var error = Marshal.GetLastPInvokeError();
-        if (error == NativeMethods.ErrorHotkeyAlreadyRegistered)
-        {
+            Current = null;
             return false;
         }
 
-        throw new Win32Exception(error);
+        Current = gesture;
+        return true;
+    }
+
+    /// <inheritdoc />
+    public bool TryChange(KeyGesture gesture)
+    {
+        var previous = Current;
+        Unregister();
+
+        if (RegisterOrFalse(gesture))
+        {
+            Current = gesture;
+            _isSuspended = false;
+            return true;
+        }
+
+        // Taken by another app: put the old one back. (It was ours a moment
+        // ago, so registering it again succeeds.)
+        if (previous is not null && !_isSuspended)
+        {
+            Register(previous);
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    public void Suspend()
+    {
+        Unregister();
+        _isSuspended = true;
+    }
+
+    /// <inheritdoc />
+    public void Resume()
+    {
+        if (!_isSuspended)
+        {
+            return;
+        }
+
+        _isSuspended = false;
+        if (Current is not null)
+        {
+            Register(Current);
+        }
     }
 
     public void Dispose()
@@ -98,6 +139,48 @@ public sealed class HotkeyService : IDisposable
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// RegisterHotKey for <paramref name="gesture"/>. False only when another
+    /// app already owns that combination; any other failure throws.
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-registerhotkey
+    /// </summary>
+    private bool Register(KeyGesture gesture)
+    {
+        var modifiers = ToNativeModifiers(gesture.Modifiers) | NativeMethods.ModNoRepeat;
+        var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(gesture.Key);
+
+        if (NativeMethods.RegisterHotKey(_messageWindow.Handle, HotkeyId, modifiers, virtualKey))
+        {
+            _isRegistered = true;
+            return true;
+        }
+
+        var error = Marshal.GetLastPInvokeError();
+        if (error == NativeMethods.ErrorHotkeyAlreadyRegistered)
+        {
+            return false;
+        }
+
+        throw new Win32Exception(error);
+    }
+
+    /// <summary>
+    /// For shortcuts picked in Settings: Windows may refuse a combination it
+    /// reserves for itself with other error codes; to the user that's simply
+    /// "can't use this one", so report false instead of throwing.
+    /// </summary>
+    private bool RegisterOrFalse(KeyGesture gesture)
+    {
+        try
+        {
+            return Register(gesture);
+        }
+        catch (Win32Exception)
+        {
+            return false;
+        }
     }
 
     private void Unregister()

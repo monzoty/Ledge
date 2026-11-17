@@ -96,8 +96,8 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] Decide on the tray library → `H.NotifyIcon.Wpf` **2.3.2** (2.4+ only ships .NET 10 and .NET Framework builds)
 - [ ] Tray icon: Open, Settings, Quit; left-click toggles the panel; survives an explorer.exe restart
 - [x] `AppSettings` + `ISettingsStore` (`settings.json`, same atomic writes) + tests
-- [ ] Settings window: hotkey (validated live), start with Windows, theme
-- [ ] Start with Windows via the HKCU Run key
+- [x] Settings window: hotkey (validated live), start with Windows, theme
+- [x] Start with Windows via the HKCU Run key
 - [ ] Light theme colours + following the Windows theme live
 - [ ] Second launch opens the existing panel (named event)
 - [ ] File logging to `%LOCALAPPDATA%\Ledge\logs` (no task titles)

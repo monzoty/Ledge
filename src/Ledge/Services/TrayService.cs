@@ -7,7 +7,7 @@ namespace Ledge.Services;
 
 /// <summary>
 /// The notification-area ("tray") icon (PRD F5.1, DESIGN.md §5 "Tray icon"):
-/// left-click toggles the panel, right-click shows Open / Quit.
+/// left-click toggles the panel, right-click shows Open / Settings / Quit.
 /// </summary>
 /// <remarks>
 /// Windows draws tray icons on Explorer's behalf and sends the owning app
@@ -28,6 +28,9 @@ public sealed class TrayService : IDisposable
 
     /// <summary>Menu → Open.</summary>
     public event EventHandler? OpenRequested;
+
+    /// <summary>Menu → Settings.</summary>
+    public event EventHandler? SettingsRequested;
 
     /// <summary>Menu → Quit.</summary>
     public event EventHandler? QuitRequested;
@@ -67,7 +70,7 @@ public sealed class TrayService : IDisposable
     {
         var menu = new ContextMenu { Style = (Style)resources.FindResource("TrayMenu") };
         menu.Items.Add(MenuItem(resources, "TrayOpen", () => OpenRequested?.Invoke(this, EventArgs.Empty)));
-        // "Settings" is added in M4 step 4c, together with the Settings window.
+        menu.Items.Add(MenuItem(resources, "TraySettings", () => SettingsRequested?.Invoke(this, EventArgs.Empty)));
         menu.Items.Add(MenuItem(resources, "TrayQuit", () => QuitRequested?.Invoke(this, EventArgs.Empty)));
         return menu;
     }

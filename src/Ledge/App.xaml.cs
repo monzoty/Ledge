@@ -33,6 +33,9 @@ public sealed partial class App : Application
     private SingleInstance? _singleInstance;
     private IHost? _host;
 
+    /// <summary>The open Settings window, or null.</summary>
+    private SettingsWindow? _settingsWindow;
+
     private static string DataFolder => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DataFolderName);
 
@@ -73,6 +76,7 @@ public sealed partial class App : Application
         await _host.StartAsync();
 
         WatchForSaveFailures();
+        SyncStartWithWindows();
 
         // Nobody else asks for it, so create it here; from now on it listens.
         _host.Services.GetRequiredService<DayRolloverService>();
@@ -93,8 +97,39 @@ public sealed partial class App : Application
         var tray = _host!.Services.GetRequiredService<TrayService>();
         tray.ToggleRequested += (_, _) => window.TogglePanelFromTray();
         tray.OpenRequested += (_, _) => window.OpenPanel();
+        tray.SettingsRequested += (_, _) => ShowSettings();
         tray.QuitRequested += async (_, _) => await QuitAsync();
         tray.Show();
+    }
+
+    /// <summary>Tray → Settings: one Settings window at a time; a second request brings it to the front.</summary>
+    private void ShowSettings()
+    {
+        if (_settingsWindow is not null)
+        {
+            _settingsWindow.Activate();
+            return;
+        }
+
+        _settingsWindow = _host!.Services.GetRequiredService<SettingsWindow>();
+        _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+        _settingsWindow.Show();
+        _settingsWindow.Activate();
+    }
+
+    /// <summary>
+    /// Makes the Windows Run entry match settings.json (PRD F5.3). When it's on,
+    /// the path is rewritten, so it follows Ledge.exe if it moved.
+    /// </summary>
+    private void SyncStartWithWindows()
+    {
+        var startup = _host!.Services.GetRequiredService<IStartupRegistration>();
+        var wanted = _host.Services.GetRequiredService<SettingsService>().Current.StartWithWindows;
+
+        if (wanted || startup.IsEnabled)
+        {
+            startup.SetEnabled(wanted);
+        }
     }
 
     /// <summary>
@@ -148,20 +183,26 @@ public sealed partial class App : Application
         services.AddSingleton<TaskAutoSaver>();
         services.AddSingleton<LocalDayWatcher>();
 
-        // Settings as loaded at start-up. Step 4c adds editing (and applying changes live).
+        // Settings: SettingsService owns the live values and saves every change.
         services.AddSingleton(settingsStore);
-        services.AddSingleton(settings);
+        services.AddSingleton(_ => new SettingsService(settingsStore, settings));
 
-        // UI services
+        // UI services. One HotkeyService, reachable both as itself (PillWindow
+        // listens for Pressed) and as IGlobalHotkey (Settings changes it).
         services.AddSingleton<ScreenService>();
         services.AddSingleton<HotkeyService>();
+        services.AddSingleton<IGlobalHotkey>(sp => sp.GetRequiredService<HotkeyService>());
+        services.AddSingleton<IStartupRegistration, StartupService>();
         services.AddSingleton<DayRolloverService>();
         services.AddSingleton<TrayService>();
 
-        // ViewModels and windows
+        // ViewModels and windows. Settings is "transient": a fresh window (and
+        // ViewModel) each time it's opened, since a closed WPF window can't be shown again.
         services.AddSingleton(motion);
         services.AddSingleton<TaskListViewModel>();
         services.AddSingleton<PillWindow>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SettingsWindow>();
 
         return builder.Build();
     }
@@ -199,6 +240,9 @@ public sealed partial class App : Application
 
         services.GetRequiredService<TaskAutoSaver>().SaveFailed += (_, ex) =>
             logger.LogError(ex, "Saving tasks failed; will retry on the next change");
+
+        services.GetRequiredService<SettingsService>().SaveFailed += (_, ex) =>
+            logger.LogError(ex, "Saving settings failed; the change applies until Ledge restarts");
     }
 
     /// <summary>

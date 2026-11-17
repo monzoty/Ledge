@@ -158,6 +158,21 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool SetForegroundWindow(nint hWnd);
 
+    /// <summary>
+    /// DWMWA_USE_IMMERSIVE_DARK_MODE: draw the window's title bar dark
+    /// (Windows 10 20H1 / build 19041 and later; older builds ignore it).
+    /// https://learn.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+    /// </summary>
+    internal const int DwmwaUseImmersiveDarkMode = 20;
+
+    /// <summary>
+    /// Sets one attribute of how the Desktop Window Manager draws a window,
+    /// here the dark title bar. Returns an HRESULT (0 = success).
+    /// https://learn.microsoft.com/windows/win32/api/dwmapi/nf-dwmapi-dwmsetwindowattribute
+    /// </summary>
+    [LibraryImport("dwmapi.dll")]
+    internal static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int valueSize);
+
     /// <summary>"Any process" for AllowSetForegroundWindow.</summary>
     internal const int AsfwAny = -1; // ASFW_ANY
 
