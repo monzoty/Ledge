@@ -10,6 +10,7 @@ A small Windows overlay app: a pill at the edge of the screen that expands
 - `docs/ARCHITECTURE.md` — structure, layers, Win32 techniques
 - `docs/ROADMAP.md` — current milestone and its checklist
 - `docs/adr/` — why past decisions were made
+- `docs/MEMORY.md` — current status and hard-won gotchas (update at the end of every step)
 
 ## How I want to work with you
 
