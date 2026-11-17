@@ -7,7 +7,7 @@
 Branch naming: `m1-overlay-window`, `m2-hotkey-and-expand`, …
 Commit style: `feat: …`, `fix: …`, `refactor: …`, `test: …`, `docs: …`
 
-**Current milestone: M3**
+**Current milestone: M4**
 
 ---
 
@@ -93,7 +93,7 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 ## M4 — Lives in the background
 **Goal:** it feels like a real utility app. [F5.1, F5.3, F5.4, F6]
 
-- [ ] Decide on the tray library (ask before adding `H.NotifyIcon.Wpf`)
+- [x] Decide on the tray library → `H.NotifyIcon.Wpf` **2.3.2** (2.4+ only ships .NET 10 and .NET Framework builds)
 - [ ] Tray icon: Open, Settings, Quit; left-click toggles the panel; survives an explorer.exe restart
 - [ ] `AppSettings` + `ISettingsStore` (`settings.json`, same atomic writes) + tests
 - [ ] Settings window: hotkey (validated live), start with Windows, theme

@@ -158,6 +158,20 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool SetForegroundWindow(nint hWnd);
 
+    /// <summary>"Any process" for AllowSetForegroundWindow.</summary>
+    internal const int AsfwAny = -1; // ASFW_ANY
+
+    /// <summary>
+    /// Lets another process take the foreground. A second copy of Ledge (which
+    /// the user just launched, so it may take the foreground) calls this before
+    /// telling the first copy to open its panel; without it, Windows' foreground
+    /// lock would stop the first copy from activating itself.
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-allowsetforegroundwindow
+    /// </summary>
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool AllowSetForegroundWindow(int processId);
+
     /// <summary>
     /// True if the handle still refers to an existing window (the app may have closed meanwhile).
     /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-iswindow

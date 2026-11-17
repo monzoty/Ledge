@@ -41,6 +41,19 @@ public sealed partial class PillWindow : Window
     /// <summary>Give up waiting after this long (e.g. a key is stuck) and hand focus back anyway.</summary>
     private static readonly TimeSpan ReturnFocusMaxWait = TimeSpan.FromSeconds(2);
 
+    /// <summary>
+    /// A tray click this soon after the panel closed because it lost focus is the
+    /// SAME click: pressing the tray icon activates the taskbar first, which closes
+    /// an open panel, and only then does the click arrive. Without this the click
+    /// would immediately re-open what the user meant to close.
+    /// </summary>
+    private static readonly TimeSpan TrayClickGrace = TimeSpan.FromMilliseconds(500);
+
+    private readonly TimeProvider _time;
+
+    /// <summary>When the panel last closed because another window was activated.</summary>
+    private long _closedByDeactivationAt;
+
     // Waits for Win/Alt/Ctrl/Shift to be released before handing focus back.
     private readonly DispatcherTimer _returnFocusTimer;
 
@@ -55,10 +68,11 @@ public sealed partial class PillWindow : Window
     /// The DI container calls this constructor and passes in what it lists,
     /// so the window never decides for itself which services it gets.
     /// </summary>
-    public PillWindow(ScreenService screen, HotkeyService hotkey, TaskListViewModel tasks)
+    public PillWindow(ScreenService screen, HotkeyService hotkey, TaskListViewModel tasks, TimeProvider time)
     {
         _screen = screen;
         _hotkey = hotkey;
+        _time = time;
 
         InitializeComponent();
         InitializeAnimation();
@@ -103,11 +117,19 @@ public sealed partial class PillWindow : Window
         // WPF resizes the window first, so re-centre after that has happened.
         DpiChanged += (_, _) => Dispatcher.BeginInvoke(PositionAtTopCentre);
 
-        _hotkey.Pressed += (_, _) => OnHotkeyPressed();
+        _hotkey.Pressed += (_, _) => TogglePanel();
 
         // The user clicked another window (or Alt+Tabbed away): close, and
         // leave focus where they put it.
-        Deactivated += (_, _) => Collapse();
+        Deactivated += (_, _) =>
+        {
+            if (IsExpanded)
+            {
+                _closedByDeactivationAt = _time.GetTimestamp();
+            }
+
+            Collapse();
+        };
     }
 
     /// <summary>
@@ -147,6 +169,19 @@ public sealed partial class PillWindow : Window
         {
             e.Handled = true;
             CloseAndReturnFocus();
+            return;
+        }
+
+        // Alt+F4 would close this window and with it the whole app. Only Quit
+        // exits (PRD F5.4), so treat it like Esc. With Alt held, WPF reports
+        // the key as Key.System and puts the real key in SystemKey.
+        if (e.Key == Key.System && e.SystemKey == Key.F4)
+        {
+            e.Handled = true;
+            if (IsExpanded)
+            {
+                CloseAndReturnFocus();
+            }
         }
     }
 
@@ -236,11 +271,33 @@ public sealed partial class PillWindow : Window
             MessageBox.Show(message, (string)FindResource("AppName"), MessageBoxButton.OK, MessageBoxImage.Warning));
     }
 
+    /// <summary>Tray icon left-click: like the hotkey, minus the click that just closed the panel.</summary>
+    public void TogglePanelFromTray()
+    {
+        if (_time.GetElapsedTime(_closedByDeactivationAt) < TrayClickGrace)
+        {
+            return;
+        }
+
+        TogglePanel();
+    }
+
+    /// <summary>Tray "Open", or a second launch of Ledge (PRD F5.2): open with focus; no-op if already there.</summary>
+    public void OpenPanel()
+    {
+        if (IsExpanded && HasFocus)
+        {
+            return;
+        }
+
+        OpenWithFocus();
+    }
+
     /// <summary>
-    /// Focused and open → close. Anything else (closed, or hover-opened
+    /// Hotkey: focused and open → close. Anything else (closed, or hover-opened
     /// without focus) → open with the cursor in quick-add.
     /// </summary>
-    private void OnHotkeyPressed()
+    private void TogglePanel()
     {
         if (IsExpanded && HasFocus)
         {

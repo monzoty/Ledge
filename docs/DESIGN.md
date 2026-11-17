@@ -18,6 +18,11 @@
 | Personality | **Calm, minimal, a little warm** | It's always on screen, so it must feel quiet. Warmth comes from one amber accent, not from decoration. |
 | Mascot or icon idea | **No mascot.** Icon: a rounded horizontal bar (the pill) with a small amber dot resting on its top edge, like something sitting on a ledge. | A mascot adds copy and animation work for no v0.1 value. A simple shape still reads clearly at 16 px in the tray. |
 
+**Stand-in icon (until M7):** `src/Ledge/Resources/Ledge.ico`, drawn from the
+idea above. It's a `PillBackground` rounded bar with a `TextSecondary` outline,
+so it stays visible on a dark taskbar, and a 13/32-size `Accent` dot centred on
+its top edge. It includes 16/20/24/32/48/256 px sizes.
+
 > Name check: before M7, search the Microsoft Store and GitHub for "Ledge"
 > to avoid a clash. Renaming before M0 is trivial; after M0 it touches
 > project names.
@@ -199,6 +204,15 @@ change. There is still a notification when the timer ends.
   panel then closes it.
 - **Hover-opened panel:** doesn't take focus. Clicking inside it activates it.
   Once it has focus, it stays open when the mouse leaves (PRD F2.6).
+- **Tray icon:**
+  - Left-click toggles the panel, opening it with focus like the hotkey.
+  - Right-click opens a menu: **Open**, **Settings** (from M4 step 4c),
+    **Quit**. The tooltip is "Ledge".
+  - The menu matches the panel: `Background`, a 1 DIP `Border`-colour outline,
+    8 DIP corners and 4 DIP inner padding. Items are 32 high, 12 DIP side
+    padding, `Body` text in `TextPrimary`, with a `Surface` background and
+    8 DIP corners when highlighted.
+- **Alt+F4 on the panel** closes the panel like Esc. Only **Quit** exits Ledge (PRD F5.4).
 - **Keyboard shortcuts inside the panel:**
 
 | Key | Action |
@@ -225,6 +239,7 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Inbox empty | "Inbox is clear." |
 | Move action tooltips | "Move to Inbox" / "Move to Today" |
 | Delete action tooltip | "Delete" |
+| Tray menu | "Open" · "Settings" · "Quit"; tooltip "Ledge" |
 | Pill, nothing open | "All clear" |
 | Pill, tasks open | "{n} today" |
 | Timer finished: title | "Focus session done" |

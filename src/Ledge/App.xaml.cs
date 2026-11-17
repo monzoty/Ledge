@@ -24,25 +24,13 @@ namespace Ledge;
 /// </remarks>
 public sealed partial class App : Application
 {
-    /// <summary>
-    /// "Local\" scopes the name to the current Windows user session, so two
-    /// people signed in on the same PC can each run their own Ledge.
-    /// https://learn.microsoft.com/windows/win32/termserv/kernel-object-namespaces
-    /// </summary>
-    private const string SingleInstanceMutexName = @"Local\Ledge-SingleInstance";
-
     /// <summary>Folder under %LOCALAPPDATA% that holds tasks.json (ARCHITECTURE.md §5).</summary>
     private const string DataFolderName = "Ledge";
 
     /// <summary>ADR-0005: the longest we wait on exit for the last save.</summary>
     private static readonly TimeSpan ExitSaveTimeout = TimeSpan.FromSeconds(2);
 
-    /// <summary>
-    /// Kept in a field on purpose: if it were a local variable, the garbage
-    /// collector could free it and release the lock while the app is still running.
-    /// </summary>
-    private Mutex? _singleInstanceMutex;
-
+    private SingleInstance? _singleInstance;
     private IHost? _host;
 
     private static string DataFolder => Path.Combine(
@@ -57,16 +45,11 @@ public sealed partial class App : Application
     {
         base.OnStartup(e);
 
-        // Try to create (and own) the named mutex. If it already exists,
-        // another Ledge is running in this session.
-        // https://learn.microsoft.com/dotnet/api/system.threading.mutex.-ctor#system-threading-mutex-ctor(system-boolean-system-string-system-boolean@)
-        _singleInstanceMutex = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out var createdNew);
-
-        if (!createdNew)
+        _singleInstance = new SingleInstance();
+        if (!_singleInstance.IsFirstInstance)
         {
-            // M4: tell the running copy to open its panel before exiting.
-            _singleInstanceMutex.Dispose();
-            _singleInstanceMutex = null;
+            // Ledge is already running: ask it to open its panel, then leave (PRD F5.2).
+            SingleInstance.AskRunningInstanceToOpenPanel();
             Shutdown();
             return;
         }
@@ -90,21 +73,49 @@ public sealed partial class App : Application
         // Nobody else asks for it, so create it here; from now on it listens.
         _host.Services.GetRequiredService<DayRolloverService>();
 
-        _host.Services.GetRequiredService<PillWindow>().Show();
+        var window = _host.Services.GetRequiredService<PillWindow>();
+        window.Show();
+
+        ShowTrayIcon(window);
+
+        // Later launches of Ledge open this panel. Their signal arrives on a
+        // thread-pool thread, so hop to the UI thread first.
+        _singleInstance.OpenPanelRequested += (_, _) => Dispatcher.BeginInvoke(window.OpenPanel);
+        _singleInstance.ListenForOtherLaunches();
+    }
+
+    private void ShowTrayIcon(PillWindow window)
+    {
+        var tray = _host!.Services.GetRequiredService<TrayService>();
+        tray.ToggleRequested += (_, _) => window.TogglePanelFromTray();
+        tray.OpenRequested += (_, _) => window.OpenPanel();
+        tray.QuitRequested += async (_, _) => await QuitAsync();
+        tray.Show();
+    }
+
+    /// <summary>
+    /// Tray → Quit, the only way to exit (PRD F5.4). Unlike OnExit, this can
+    /// await the final save properly (ADR-0005), so OnExit then has nothing left to do.
+    /// </summary>
+    private async Task QuitAsync()
+    {
+        if (_host?.Services.GetService<TaskAutoSaver>() is { } saver)
+        {
+            await saver.FlushAsync();
+        }
+
+        Shutdown();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         FlushPendingSave();
 
-        // Disposes every singleton that is IDisposable (hotkey, screen events, autosaver).
+        // Disposes every singleton that is IDisposable (hotkey, screen events,
+        // autosaver, tray icon — which removes it from the tray at once).
         _host?.Dispose();
 
-        if (_singleInstanceMutex is not null)
-        {
-            _singleInstanceMutex.ReleaseMutex();
-            _singleInstanceMutex.Dispose();
-        }
+        _singleInstance?.Dispose();
 
         base.OnExit(e);
     }
@@ -131,6 +142,7 @@ public sealed partial class App : Application
         services.AddSingleton<ScreenService>();
         services.AddSingleton<HotkeyService>();
         services.AddSingleton<DayRolloverService>();
+        services.AddSingleton<TrayService>();
 
         // ViewModels and windows
         services.AddSingleton(motion);

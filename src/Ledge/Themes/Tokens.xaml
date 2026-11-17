@@ -103,6 +103,11 @@
   <!-- Panel grows/shrinks to fit new content while open (DESIGN.md §2) -->
   <sys:TimeSpan x:Key="PanelResizeDuration">0:0:0.150</sys:TimeSpan>
 
+  <!-- Tray menu (DESIGN.md §5 "Tray icon"): 1 DIP outline, 4 DIP inner padding, items 32 high with 12 DIP sides -->
+  <Thickness x:Key="MenuBorderThickness">1</Thickness>
+  <Thickness x:Key="MenuPadding">4</Thickness>
+  <Thickness x:Key="MenuItemPadding">12,0,12,0</Thickness>
+
   <!-- Thin overlay scrollbar (DESIGN.md §2): 4 wide; radius = half the width (derived) -->
   <sys:Double x:Key="ScrollBarWidth">4</sys:Double>
   <CornerRadius x:Key="ScrollBarCornerRadius">2</CornerRadius>

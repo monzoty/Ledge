@@ -15,8 +15,14 @@
     <ProjectReference Include="..\Ledge.Core\Ledge.Core.csproj" />
   </ItemGroup>
 
+  <!-- Stand-in tray icon (DESIGN.md §0), compiled into the exe; loaded via a pack:// URI. -->
+  <ItemGroup>
+    <Resource Include="Resources\Ledge.ico" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.3.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
   </ItemGroup>
 

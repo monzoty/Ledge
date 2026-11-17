@@ -9,6 +9,7 @@
         <ResourceDictionary Source="Resources/Strings.xaml" />
         <ResourceDictionary Source="Themes/ScrollViewer.xaml" />
         <ResourceDictionary Source="Views/TaskListResources.xaml" />
+        <ResourceDictionary Source="Themes/TrayMenu.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
