@@ -94,13 +94,13 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 **Goal:** it feels like a real utility app. [F5.1, F5.3, F5.4, F6]
 
 - [x] Decide on the tray library → `H.NotifyIcon.Wpf` **2.3.2** (2.4+ only ships .NET 10 and .NET Framework builds)
-- [ ] Tray icon: Open, Settings, Quit; left-click toggles the panel; survives an explorer.exe restart
+- [x] Tray icon: Open, Settings, Quit; left-click toggles the panel; survives an explorer.exe restart
 - [x] `AppSettings` + `ISettingsStore` (`settings.json`, same atomic writes) + tests
 - [x] Settings window: hotkey (validated live), start with Windows, theme
 - [x] Start with Windows via the HKCU Run key
 - [x] Light theme colours + following the Windows theme live
-- [ ] Second launch opens the existing panel (named event)
-- [ ] File logging to `%LOCALAPPDATA%\Ledge\logs` (no task titles)
+- [x] Second launch opens the existing panel (named event)
+- [x] File logging to `%LOCALAPPDATA%\Ledge\logs` (no task titles)
 
 **Done when:** you can reboot and it's just there, configured.
 

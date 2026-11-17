@@ -12,13 +12,12 @@
 ## Current status
 
 - **Milestone:** M4, "Lives in the background", on branch `m4-background`.
-- **Committed:**
-  - 4a: tray, second launch, Alt+F4
-  - 4b: `settings.json` via `JsonFile<T>`
-  - 4c: Settings window
-- **Step 4d** (light theme, following Windows live) is built and unit-tested,
-  but not yet checked by hand or committed.
-- **Next:** 4e, file logging. That's the last M4 step.
+- **M4 is complete and merged into `main`** (2026-11-17). It covers the tray,
+  second launch, settings, the Settings window, the light theme and logging.
+- **Still open:** the hand-run M4 checklist (ROADMAP "Done when": reboot and
+  it's just there, configured). Nobody has run M4 by hand yet. Fix anything it
+  finds on a `fix/...` branch.
+- **Next:** M5, the focus timer.
 
 ## Milestone log
 
@@ -28,7 +27,7 @@
 | M1 Overlay window | ✅ | Tool window, no-activate, click-through, PerMonitorV2, single instance |
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
-| M4 Background app | in progress | 4a `8eb6cdd`, 4b `ac2eb1a`, 4c `5da8318`; 4d built (uncommitted) |
+| M4 Background app | ✅ | Tray, single-instance signal, settings.json, Settings window, light theme, file logging. Manual check still pending. |
 
 ## Gotchas and lessons learned
 
@@ -107,6 +106,15 @@
   with `DwmSetWindowAttribute` and must be updated when the theme changes.
 - **A click on a non-focusable element doesn't move keyboard focus,** so "click
   elsewhere cancels" needs a window-level `PreviewMouseDown`.
+
+### Logging
+- **Host default logging adds a console and the Windows Event Log.** Use
+  `ClearProviders()`, then add only what's wanted.
+- **The DI container doesn't dispose a logger provider passed to
+  `AddProvider`.** Dispose it yourself, last, in `OnExit`.
+- **`DispatcherUnhandledException` is usually followed by
+  `AppDomain.UnhandledException`** for the same crash. Guard against handling
+  it twice.
 
 ### Tooling (PowerShell 5.1)
 - **`Set-Content -Encoding utf8` adds a BOM,** which fails `dotnet format`

@@ -57,13 +57,16 @@ public sealed partial class App : Application
             return;
         }
 
+        var time = TimeProvider.System;
+        StartLogging(time);
+
         DisableXamlAnimationsIfTurnedOff();
 
         // The tasks must be loaded before the board (and everything showing it)
         // exists, so load first, then register the result in the container.
-        var time = TimeProvider.System;
         var store = new JsonTaskStore(DataFolder, time);
         var loaded = await store.LoadAsync();
+        LogLoad(loaded);
 
         // Settings too: the hotkey is registered as soon as the window exists.
         var settingsStore = new JsonSettingsStore(DataFolder, time);
@@ -141,6 +144,8 @@ public sealed partial class App : Application
     /// </summary>
     private async Task QuitAsync()
     {
+        _log.LogInformation("Quit requested");
+
         if (_host?.Services.GetService<TaskAutoSaver>() is { } saver)
         {
             await saver.FlushAsync();
@@ -159,6 +164,13 @@ public sealed partial class App : Application
 
         _singleInstance?.Dispose();
 
+        // Last, so everything above can still log. Writes out queued lines (ADR-0005).
+        if (_logs is not null)
+        {
+            _log.LogInformation("Ledge stopped");
+            _logs.Dispose();
+        }
+
         base.OnExit(e);
     }
 
@@ -166,7 +178,7 @@ public sealed partial class App : Application
     /// The service registrations: "when a class asks for X, give it this".
     /// Singleton = one shared instance for the whole app.
     /// </summary>
-    private static IHost BuildHost(
+    private IHost BuildHost(
         TimeProvider time,
         ITaskStore store,
         TaskLoadResult loaded,
@@ -176,6 +188,7 @@ public sealed partial class App : Application
     {
         // https://learn.microsoft.com/dotnet/core/extensions/generic-host
         var builder = Host.CreateApplicationBuilder();
+        ConfigureLogging(builder.Logging);
         var services = builder.Services;
 
         // Core

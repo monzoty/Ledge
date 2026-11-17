@@ -245,6 +245,17 @@ linking to the Microsoft docs page for that function. Prefer
   `AppDomain.UnhandledException` log the error and flush any pending save.
 - Logs go to `%LOCALAPPDATA%\Ledge\logs\ledge-<date>.log`, keeping the last
   7 files. **Task titles are never logged.**
+- `FileLoggerProvider` (app, `Logging/`) is a hand-written `ILoggerProvider`.
+  Lines go into a `Channel` and one background task appends them, so logging
+  never waits on the UI thread. The format is
+  `yyyy-MM-dd HH:mm:ss.fff zzz [LVL] Category: message`, with any exception
+  indented underneath. The minimum level is Information, and `Microsoft.*`
+  only from Warning. The default console and Event Log providers are removed.
+- On a crash (`DispatcherUnhandledException` / `AppDomain.UnhandledException`):
+  log it as Critical, save pending tasks, flush the log, then let Ledge close
+  (decided 2026-11-17: never keep running half-broken). A failed background
+  task that nobody waited for (`UnobservedTaskException`) is logged, and Ledge
+  keeps running.
 
 ## 9. Testing strategy
 

@@ -53,7 +53,7 @@ dotnet format                              # fix formatting
 - No hard-coded colours/sizes in XAML — use resources from `Themes/Tokens.xaml`.
 - Time comes from an injected `TimeProvider`, never `DateTime.Now` directly.
 - File I/O is async; never block the UI thread (`.Result`, `.Wait()` forbidden).
-  Only exception: the bounded final save in `App.OnExit` (ADR-0005).
+  Only exceptions: the bounded final save and log flush on exit or crash (ADR-0005).
 - Saves are atomic (temp file + replace) with a `.bak` copy.
 
 ## C# conventions

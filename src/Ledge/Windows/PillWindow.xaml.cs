@@ -8,6 +8,7 @@ using Ledge.Core.Services;
 using Ledge.Interop;
 using Ledge.Services;
 using Ledge.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace Ledge.Windows;
 
@@ -53,6 +54,7 @@ public sealed partial class PillWindow : Window
 
     private readonly TimeProvider _time;
     private readonly SettingsService _settings;
+    private readonly ILogger<PillWindow> _log;
 
     /// <summary>When the panel last closed because another window was activated.</summary>
     private long _closedByDeactivationAt;
@@ -77,8 +79,10 @@ public sealed partial class PillWindow : Window
         TaskListViewModel tasks,
         TimeProvider time,
         SettingsService settings,
-        ThemeService theme)
+        ThemeService theme,
+        ILogger<PillWindow> log)
     {
+        _log = log;
         _screen = screen;
         _hotkey = hotkey;
         _time = time;
@@ -268,8 +272,8 @@ public sealed partial class PillWindow : Window
         if (HotkeyText.Parse(text) is not { } gesture)
         {
             // A hand-edited settings.json with a hotkey we can't read: use the default.
-            text = AppSettings.DefaultHotkey;
-            gesture = HotkeyText.Parse(text)!;
+            _log.LogWarning("Hotkey {Hotkey} in settings.json can't be read; using {Default}", text, AppSettings.DefaultHotkey);
+            gesture = HotkeyText.Parse(AppSettings.DefaultHotkey)!;
         }
 
         if (_hotkey.TryRegister(gesture))
@@ -277,12 +281,15 @@ public sealed partial class PillWindow : Window
             return;
         }
 
-        // Show the shortcut exactly as written in Tokens.xaml; WPF's own display
-        // string would reorder it (e.g. "Alt+Windows+L").
+        var shown = HotkeyText.ToShown(gesture);
+        _log.LogWarning("Hotkey {Hotkey} is already used by another app", shown);
+
+        // Shown the same way as in Settings ("Win + Alt + L"); WPF's own display
+        // string would reorder it ("Alt+Windows+L").
         var message = string.Format(
             CultureInfo.CurrentCulture,
             (string)FindResource("HotkeyTakenMessage"),
-            text);
+            shown);
 
         // Show it after start-up finishes, so the pill appears first.
         Dispatcher.BeginInvoke(() =>

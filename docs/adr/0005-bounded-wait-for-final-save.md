@@ -37,3 +37,12 @@ thread-pool thread and waits for it for **at most 2 seconds**. This is the
   can't corrupt `tasks.json`.
 - A Quit command with UI (the tray in M4) should still `await FlushAsync()`
   normally before calling `Shutdown()`. Then nothing is left for `OnExit` to do.
+
+## Amendment (2026-11-17, M4 step 4e): the log flush
+
+The file logger queues lines and writes them on a background task.
+`FileLoggerProvider.Dispose()` waits **at most 1 second** for the queued
+lines. It runs only on exit and after a crash, when no UI is left to freeze.
+This is the same kind of exception as above: bounded, and only while
+shutting down. The crash handler also uses the save flush above before Ledge
+closes.
