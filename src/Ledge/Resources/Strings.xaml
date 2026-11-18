@@ -27,6 +27,13 @@
   <sys:String x:Key="TimerReplaceQuestion">Stop the current session and start a new one?</sys:String>
   <sys:String x:Key="TimerStartNew">Start new</sys:String>
   <sys:String x:Key="TimerKeepCurrent">Keep current</sys:String>
+  <!-- When a session ends (DESIGN.md §6). {0} = minutes, {1} = task title, {0} in Ended = the time -->
+  <sys:String x:Key="FocusDoneTitle">Focus session done</sys:String>
+  <sys:String x:Key="FocusDoneLinked">{0} min on “{1}”. Time for a short break.</sys:String>
+  <sys:String x:Key="FocusDoneUnlinked">{0} minutes of focus. Time for a short break.</sys:String>
+  <sys:String x:Key="FocusEndedTitle">Focus session ended</sys:String>
+  <sys:String x:Key="FocusEndedBody">It ended at {0}, while your PC was asleep.</sys:String>
+  <sys:String x:Key="FocusMarkTaskDone">Mark task done</sys:String>
   <!-- Read by screen readers only, not shown -->
   <sys:String x:Key="TimerStartName">Start focus session</sys:String>
   <sys:String x:Key="TimerPauseName">Pause</sys:String>

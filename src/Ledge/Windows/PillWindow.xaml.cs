@@ -109,6 +109,7 @@ public sealed partial class PillWindow : Window
         // doesn't see it appear or disappear; resize the panel for it too.
         UndoHint.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
         DataNotice.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
+        FocusDoneLine.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
 
         // The collapsed pill: "All clear", "n today" or the timer, and its width.
         _pill = pill;

@@ -78,6 +78,16 @@ public sealed partial class TaskListViewModel : ObservableObject
     private bool _showUndoHint;
 
     /// <summary>
+    /// "Focus session done · Mark task done" at the bottom of the panel, after
+    /// a linked session ends (DESIGN.md §2 "When a focus session ends").
+    /// </summary>
+    [ObservableProperty]
+    private bool _showFocusDoneLine;
+
+    /// <summary>The task that line is about.</summary>
+    private Guid? _focusDoneTaskId;
+
+    /// <summary>
     /// Some row's rename box is open. The window checks this so Esc cancels
     /// the rename instead of closing the panel (DESIGN.md §5).
     /// </summary>
@@ -171,6 +181,47 @@ public sealed partial class TaskListViewModel : ObservableObject
         ClearUndo();
         ShowRestoredNotice = false;
         ShowResetNotice = false;
+        HideFocusDoneLine();
+    }
+
+    /// <summary>
+    /// A focus session ended. If it was for a task that's still open, offer
+    /// "Mark task done" in the panel (PRD F4.6). Returns that task's title for
+    /// the notification, or null if there's no such task.
+    /// </summary>
+    public string? OnFocusFinished(Guid? taskId)
+    {
+        var task = _board.Document.Tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task is null)
+        {
+            return null; // unlinked, or the task was deleted meanwhile
+        }
+
+        if (!task.IsDone)
+        {
+            _focusDoneTaskId = task.Id;
+            ShowFocusDoneLine = true;
+        }
+
+        return task.Title;
+    }
+
+    /// <summary>The "Mark task done" chip. Only ever marks done, never un-does.</summary>
+    [RelayCommand]
+    private void MarkFocusTaskDone()
+    {
+        if (_focusDoneTaskId is { } id && _board.Document.Tasks.FirstOrDefault(t => t.Id == id) is { IsDone: false })
+        {
+            _board.Toggle(id);
+        }
+
+        HideFocusDoneLine();
+    }
+
+    private void HideFocusDoneLine()
+    {
+        ShowFocusDoneLine = false;
+        _focusDoneTaskId = null;
     }
 
     // --- Called by TaskRowViewModel ------------------------------------------

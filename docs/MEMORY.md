@@ -16,12 +16,11 @@
   checklist is still pending (reboot and it's just there, configured). Fix
   anything it finds on a `fix/...` branch.
 - **M5 (focus timer)** is on branch `m5-focus-timer`.
-  - **5a** (Core timer) and **5b** (timer row) are committed.
-  - **5c** (pill ring and `mm:ss`, 136 wide, paused look, `PillViewModel`) is
-    built, tested and seen running, but not yet committed.
-  - **Next steps:**
-    - 5d: the notification
-    - 5e: hiding the pill over full-screen apps
+  - **5a** (Core timer), **5b** (timer row) and **5c** (pill timer) are
+    committed.
+  - **5d** (tray notification, "Mark task done" panel line, pill pulse,
+    asleep wording) is built and tested, but not yet committed.
+  - **Next:** 5e, hiding the pill over full-screen apps.
 
 ## Milestone log
 
@@ -32,7 +31,7 @@
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
 | M4 Background app | ✅ | Tray, single-instance signal, settings.json, Settings window, light theme, file logging. Manual check still pending. |
-| M5 Focus timer | in progress | 5a `1868964`, 5b `e0882b5`; 5c built (uncommitted) |
+| M5 Focus timer | in progress | 5a `1868964`, 5b `e0882b5`, 5c `93db9a4`; 5d built (uncommitted) |
 
 ## Gotchas and lessons learned
 
@@ -106,6 +105,12 @@
   how a space typed in the rename box doesn't also tick the task.
 - **`TaskbarIcon.ForceCreate()` turns on Windows Efficiency Mode by default.**
   Pass `false`.
+- **Tray notifications can't have buttons,** and Windows holds them back
+  during Do Not Disturb or a full-screen app (`respectQuietTime`). Toasts with
+  buttons need an app identity and Windows App SDK or Toolkit notifications;
+  that's planned for v0.2.
+- **A `Thickness` property needs a `<Thickness>` resource.** A `sys:Double`
+  compiles but fails when the XAML loads.
 - **Clicking the tray icon activates the taskbar first,** which closes an open
   panel. A short grace period stops the same click from reopening it.
 - **A registered global hotkey swallows its keys everywhere,** including in

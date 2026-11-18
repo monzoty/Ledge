@@ -115,7 +115,7 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] Tests with `FakeTimeProvider`: pause/resume, a 10-minute sleep jump, finishes exactly once, replacing a session
 - [x] Timer row: presets 15/25/50, start/pause/stop; Ctrl+Enter starts on the selected task
 - [x] The pill shows a ring and `mm:ss` (136 × 28); paused state
-- [ ] Notification when finished (+ "Mark task done" for a linked task); pill pulse
+- [x] Notification when finished (+ "Mark task done" for a linked task); pill pulse
 - [ ] Hide the pill while a fullscreen app is in front (`SHQueryUserNotificationState` + foreground hook)
 
 **Done when:** a 25-minute session is accurate to the second after sleep/wake, and the pill

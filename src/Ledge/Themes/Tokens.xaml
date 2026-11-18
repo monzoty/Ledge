@@ -24,6 +24,13 @@
   <!-- Pill timer ring (DESIGN.md §2 "Pill timer"): 12 DIP, 2 DIP stroke, track at 30 % -->
   <sys:Double x:Key="PillRingThickness">2</sys:Double>
   <sys:Double x:Key="PillRingTrackOpacity">0.3</sys:Double>
+  <!--
+    Pill pulse when a session ends (DESIGN.md §4): 2 DIP PillAccent outline,
+    twice 0 → 1 → 0 at 600 ms each, i.e. 300 ms up + 300 ms down per pulse.
+  -->
+  <Thickness x:Key="PillPulseThickness">2</Thickness>
+  <sys:TimeSpan x:Key="PillPulseHalfDuration">0:0:0.300</sys:TimeSpan>
+  <sys:Double x:Key="PillPulseCount">2</sys:Double>
   <!-- Pill label cross-fade and width change (DESIGN.md §4). Set to 0 by App when animations are off. -->
   <Duration x:Key="PillLabelDuration">0:0:0.150</Duration>
 

@@ -171,6 +171,7 @@ v0.1, can slip to v0.2. **Could** = only if it's cheap.
 | F4.3 | **Pause / resume** and **stop**. Stop asks nothing and records nothing. |
 | F4.4 | When the timer ends, a Windows notification appears even if the panel is closed or another app is fullscreen. Notification text → DESIGN.md §6. |
 | F4.5 | If the timer ended while the PC was asleep, the notification shows on wake, saying that it ended. |
+| F4.4 note | Windows itself holds back notifications while a full-screen app is in front or Do Not Disturb is on: they go to the notification centre without popping up. An ordinary app can't override this. The pill pulse and the panel line still happen. (Added 2026-11-18.) |
 | F4.6 | When a linked timer ends, the notification offers **"Mark task done"** as a Should. |
 | F4.7 | Starting a new timer while one is running replaces it, after a confirmation. |
 

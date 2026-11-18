@@ -92,6 +92,9 @@ public sealed partial class App : Application
 
         ShowTrayIcon(window);
 
+        // When a focus session ends: notification + panel line (the service), pill pulse (the window).
+        _host.Services.GetRequiredService<FocusCompletionService>().Completed += (_, _) => window.PulsePill();
+
         // Later launches of Ledge open this panel. Their signal arrives on a
         // thread-pool thread, so hop to the UI thread first.
         _singleInstance.OpenPanelRequested += (_, _) => Dispatcher.BeginInvoke(window.OpenPanel);
@@ -104,6 +107,7 @@ public sealed partial class App : Application
         tray.ToggleRequested += (_, _) => window.TogglePanelFromTray();
         tray.OpenRequested += (_, _) => window.OpenPanel();
         tray.SettingsRequested += (_, _) => ShowSettings();
+        tray.NotificationClicked += (_, _) => window.OpenPanel();
         tray.QuitRequested += async (_, _) => await QuitAsync();
         tray.Show();
     }
@@ -214,6 +218,7 @@ public sealed partial class App : Application
         services.AddSingleton<ThemeService>();
         services.AddSingleton<DayRolloverService>();
         services.AddSingleton<TrayService>();
+        services.AddSingleton<FocusCompletionService>();
 
         // ViewModels and windows. Settings is "transient": a fresh window (and
         // ViewModel) each time it's opened, since a closed WPF window can't be shown again.

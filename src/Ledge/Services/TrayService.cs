@@ -35,6 +35,18 @@ public sealed class TrayService : IDisposable
     /// <summary>Menu → Quit.</summary>
     public event EventHandler? QuitRequested;
 
+    /// <summary>The user clicked a notification we showed.</summary>
+    public event EventHandler? NotificationClicked;
+
+    /// <summary>
+    /// A Windows notification from the tray icon. Windows decides how it looks
+    /// (on Windows 10/11 it appears like a toast) and holds it back during Do
+    /// Not Disturb or a full-screen app (respectQuietTime). It can't have buttons.
+    /// https://learn.microsoft.com/windows/win32/shell/notification-area#notifications-and-the-notification-area
+    /// </summary>
+    public void ShowNotification(string title, string message) =>
+        _icon?.ShowNotification(title, message, respectQuietTime: true);
+
     /// <summary>Adds the icon to the tray. Call once, on the UI thread, after resources are loaded.</summary>
     public void Show()
     {
@@ -52,6 +64,7 @@ public sealed class TrayService : IDisposable
         };
 
         _icon.TrayLeftMouseUp += (_, _) => ToggleRequested?.Invoke(this, EventArgs.Empty);
+        _icon.TrayBalloonTipClicked += (_, _) => NotificationClicked?.Invoke(this, EventArgs.Empty);
 
         // The icon isn't part of any window, so tell it to create itself now.
         // false = DON'T put the app into Windows "Efficiency mode" (low priority),

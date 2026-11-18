@@ -531,6 +531,73 @@ public sealed class TaskListViewModelTests
         Assert.False(row.StartFocusCommand.CanExecute(null));
     }
 
+    // --- When a focus session ends -------------------------------------------------
+
+    [Fact]
+    public void FocusFinished_OnAnOpenTask_ShowsTheLine_AndReturnsTheTitle()
+    {
+        var row = AddRow("Email Priya");
+
+        var title = _viewModel.OnFocusFinished(row.Id);
+
+        Assert.Equal("Email Priya", title);
+        Assert.True(_viewModel.ShowFocusDoneLine);
+    }
+
+    [Fact]
+    public void MarkTaskDone_TicksTheTask_AndHidesTheLine()
+    {
+        var row = AddRow("Task");
+        _viewModel.OnFocusFinished(row.Id);
+
+        _viewModel.MarkFocusTaskDoneCommand.Execute(null);
+
+        Assert.True(row.IsDone);
+        Assert.False(_viewModel.ShowFocusDoneLine);
+    }
+
+    [Fact]
+    public void MarkTaskDone_NeverUnticks_ATaskDoneMeanwhile()
+    {
+        var row = AddRow("Task");
+        _viewModel.OnFocusFinished(row.Id);
+        row.ToggleCommand.Execute(null); // ticked by hand meanwhile
+
+        _viewModel.MarkFocusTaskDoneCommand.Execute(null);
+
+        Assert.True(row.IsDone);
+    }
+
+    [Fact]
+    public void FocusFinished_OnADoneTask_ShowsNoLine_ButStillGivesTheTitle()
+    {
+        var row = AddRow("Task");
+        row.ToggleCommand.Execute(null);
+
+        Assert.Equal("Task", _viewModel.OnFocusFinished(row.Id));
+        Assert.False(_viewModel.ShowFocusDoneLine);
+    }
+
+    [Fact]
+    public void FocusFinished_UnlinkedOrDeleted_ShowsNothing()
+    {
+        Assert.Null(_viewModel.OnFocusFinished(null));
+        Assert.Null(_viewModel.OnFocusFinished(Guid.NewGuid()));
+        Assert.False(_viewModel.ShowFocusDoneLine);
+    }
+
+    [Fact]
+    public void ClosingThePanel_HidesTheLine()
+    {
+        var row = AddRow("Task");
+        _viewModel.OnFocusFinished(row.Id);
+
+        _viewModel.OnPanelClosed();
+
+        Assert.False(_viewModel.ShowFocusDoneLine);
+        Assert.False(row.IsDone);
+    }
+
     // --- Day change -------------------------------------------------------------
 
     [Fact]

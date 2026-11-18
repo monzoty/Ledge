@@ -160,6 +160,21 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
   right end, 12 DIP from the edge, while its timer runs or is paused. It's
   hidden while the mouse is over the row, where the delete and move icons
   appear.
+- **When a focus session ends** (decided 2026-11-18):
+  - **Notification:** a tray notification with the title and body from §6.
+    Clicking it opens the panel. There are no buttons; tray notifications
+    can't have them.
+  - **Ended while asleep:** if the end is noticed more than **1 minute** late,
+    the notification uses the "ended" texts from §6 instead.
+  - **Panel line:** for a session linked to a task, a line at the bottom of
+    the panel (where the undo hint goes) reads "Focus session done", with a
+    **Mark task done** chip on the right. It's one row high, `Small`
+    `TextSecondary`, 12 DIP in, and stays until the panel closes. If the task
+    is already done, there's no line.
+  - **Pill pulse:** a **2 DIP** `PillAccent` outline that follows the shell's
+    rounded shape (pill or panel). It's invisible except during the pulse:
+    twice, opacity 0 → 1 → 0, 600 ms each (§4). There's no pulse when Windows
+    animations are off.
 - **Data notice** (task file restored or reset): a line at the **bottom of
   the panel**, where the undo hint goes, in `Small` text in `Danger`. It wraps
   to as many lines as it needs, at least one row high (32), 12 DIP in. It shows
@@ -323,6 +338,9 @@ Voice: short, plain, friendly. No exclamation marks, no emoji in the UI.
 | Timer finished: body (unlinked) | "{minutes} minutes of focus. Time for a short break." |
 | Timer finished: action | "Mark task done" |
 | Replace running timer | "Stop the current session and start a new one?" · buttons "Start new" / "Keep current" |
+| Timer ended while asleep: title | "Focus session ended" |
+| Timer ended while asleep: body | "It ended at {time}, while your PC was asleep." ({time} in the user's short time format) |
+| Panel line after a linked session | "Focus session done" · chip "Mark task done" |
 | Timer row label | "Focus" |
 | Timer, names for screen readers only (not shown) | "Start focus session" · "Pause" · "Resume" · "Stop" · "{n} minutes" (chips) · "Linked to the focus timer" (marker) |
 | Hotkey taken | "{hotkey} is already used by another app. Pick a different shortcut in Settings." |

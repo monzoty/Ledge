@@ -61,6 +61,19 @@
       <Grid ClipToBounds="True">
 
         <!--
+          Pulse outline when a focus session ends (DESIGN.md §2/§4): 2 DIP
+          PillAccent, following the shell's corners (pill or panel). Invisible
+          until PillWindow.Animation.cs pulses its opacity. Drawn first, so it
+          sits behind the content; it only covers the shell's edge anyway.
+        -->
+        <Border x:Name="PulseRing"
+                BorderBrush="{StaticResource PillAccentBrush}"
+                BorderThickness="{StaticResource PillPulseThickness}"
+                CornerRadius="{Binding CornerRadius, ElementName=Shell}"
+                Opacity="0"
+                IsHitTestVisible="False" />
+
+        <!--
           Pill content (DESIGN.md §2, PRD F1.4): one of three looks, picked by
           PillViewModel.Mode: "✓ All clear", "• 3 today", or the timer (ring or
           pause icon + "18:42"). All three sit in one cell; the one matching
@@ -253,6 +266,23 @@
                            Visibility="{Binding ShowResetNotice, Converter={StaticResource BoolToVisibility}}" />
               </Grid>
             </Border>
+            <!--
+              After a linked focus session (DESIGN.md §2 "When a focus session
+              ends"): "Focus session done" and a "Mark task done" chip, one row
+              high, until the panel closes.
+            -->
+            <DockPanel x:Name="FocusDoneLine"
+                       DockPanel.Dock="Bottom"
+                       Height="{StaticResource TaskRowHeight}"
+                       Visibility="{Binding ShowFocusDoneLine, Converter={StaticResource BoolToVisibility}}">
+              <Button DockPanel.Dock="Right"
+                      Style="{StaticResource ChipButton}"
+                      Content="{StaticResource FocusMarkTaskDone}"
+                      Margin="{StaticResource TaskRowTitleMargin}"
+                      VerticalAlignment="Center"
+                      Command="{Binding MarkFocusTaskDoneCommand}" />
+              <TextBlock Text="{StaticResource FocusDoneTitle}" Style="{StaticResource EmptyStateText}" />
+            </DockPanel>
             <Border x:Name="UndoHint"
                     DockPanel.Dock="Bottom"
                     Height="{StaticResource TaskRowHeight}"

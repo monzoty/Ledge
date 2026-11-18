@@ -27,6 +27,7 @@ public sealed partial class PillWindow
     private static readonly IEasingFunction ExpandEasing = new CubicEase { EasingMode = EasingMode.EaseOut };
     private static readonly IEasingFunction CollapseEasing = new CubicEase { EasingMode = EasingMode.EaseIn };
     private static readonly IEasingFunction ResizeEasing = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+    private static readonly IEasingFunction PulseEasing = new SineEase { EasingMode = EasingMode.EaseInOut };
 
     /// <summary>
     /// True while the open/close morph runs. The content's size changes during
@@ -112,6 +113,30 @@ public sealed partial class PillWindow
         {
             AnimateToContentHeight();
         }
+    }
+
+    /// <summary>
+    /// A focus session ended: the amber outline pulses twice, 0 → 1 → 0 at
+    /// 600 ms each, SineEase EaseInOut (DESIGN.md §4). With Windows animations
+    /// off there's nothing to show, so it's skipped (the notification still comes).
+    /// AutoReverse plays it back down; RepeatBehavior does it twice.
+    /// </summary>
+    public void PulsePill()
+    {
+        if (!SystemParameters.ClientAreaAnimation)
+        {
+            return;
+        }
+
+        var half = Duration("PillPulseHalfDuration");
+        var pulse = new DoubleAnimation(0, 1, new Duration(half))
+        {
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(Double("PillPulseCount")),
+            EasingFunction = PulseEasing,
+        };
+
+        PulseRing.BeginAnimation(OpacityProperty, pulse);
     }
 
     /// <summary>The collapsed pill's width: 136 while showing a timer, otherwise 112 (DESIGN.md §2).</summary>
