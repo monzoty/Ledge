@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
+using Ledge.ViewModels;
 
 namespace Ledge.Windows;
 
@@ -113,6 +114,27 @@ public sealed partial class PillWindow
         }
     }
 
+    /// <summary>The collapsed pill's width: 136 while showing a timer, otherwise 112 (DESIGN.md §2).</summary>
+    private double CollapsedWidth() =>
+        Double(_pill.Mode == PillMode.Timer ? "PillTimerWidth" : "PillWidth");
+
+    /// <summary>
+    /// The pill switched between the timer and the other labels while closed:
+    /// ease its width along with the label cross-fade (DESIGN.md §4, 150 ms).
+    /// While open (or opening/closing) the panel owns the width; the collapse
+    /// animation picks up the right width by itself.
+    /// </summary>
+    private void AnimatePillWidth()
+    {
+        if (IsExpanded || _isMorphing)
+        {
+            return;
+        }
+
+        var duration = ((Duration)FindResource("PillLabelDuration")).TimeSpan;
+        Animate(Shell, WidthProperty, CollapsedWidth(), TimeSpan.Zero, duration, ResizeEasing);
+    }
+
     private void AnimateToContentHeight()
     {
         var target = PanelHeight();
@@ -136,7 +158,7 @@ public sealed partial class PillWindow
         // Content fades out first, then height shrinks, then width.
         Animate(PanelContent, OpacityProperty, 0, TimeSpan.Zero, fade, CollapseEasing);
         Animate(Shell, HeightProperty, Double("PillHeight"), fade, sizeStep, CollapseEasing);
-        var widthDone = Animate(Shell, WidthProperty, Double("PillWidth"), fade + sizeStep, sizeStep, CollapseEasing);
+        var widthDone = Animate(Shell, WidthProperty, CollapsedWidth(), fade + sizeStep, sizeStep, CollapseEasing);
         AnimateColor(BrushColor("PillBackgroundBrush"), total, CollapseEasing);
         Animate(ShellShadow, DropShadowEffect.OpacityProperty, 0, TimeSpan.Zero, total, CollapseEasing);
         Animate(PillContent, OpacityProperty, 1, fade + sizeStep, sizeStep, CollapseEasing);

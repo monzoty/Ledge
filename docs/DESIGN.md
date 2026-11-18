@@ -61,10 +61,23 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
 |---|---|---|
 | Collapsed (idle, tasks open) | **112 × 28** | Small amber dot (**6 DIP** circle, `Accent`, 4 DIP gap to the text) + "**3 today**" (count of open tasks in Today) |
 | Collapsed (idle, nothing open) | **112 × 28** | Check icon + "**All clear**" |
-| Collapsed (timer running) | **136 × 28** | Ring icon showing progress + "**18:42**" (tabular digits); when paused, a pause icon replaces the ring and the text dims to secondary |
+| Collapsed (timer running) | **136 × 28** | Ring icon showing progress + "**18:42**" (tabular digits); when paused, a pause icon replaces the ring and the text dims to secondary. See "Pill timer" below the table. |
 | Peek (hover) | — | **None in v0.1.** Hover goes straight to Expanded. Simpler, and one fewer state to tune. |
 | Expanded | **360 wide**, height fits content, **min 160, max 520** (the list scrolls beyond that) | The pill widens and grows downward into the panel |
 | Empty (no tasks) | — | Message in the Today area (§6) |
+
+**Pill timer** (decided 2026-11-17):
+- **What the pill shows:** while a session is running or paused, the pill
+  shows the timer instead of "n today" / "All clear" (PRD F1.4).
+- **Ring:** 12 DIP (the pill icon size), 2 DIP stroke.
+  - The track is a full circle in `PillText` at 30 % opacity.
+  - On top, an arc in `PillAccent` shows the time **left**. It starts as a
+    full circle at 12 o'clock and shrinks clockwise as the session runs, like
+    a countdown.
+- **Paused:** a 12 DIP pause icon in place of the ring. The icon and the time
+  use `PillTextSecondary`.
+- **Changing modes:** switching between the timer and the other labels uses
+  the §4 cross-fade (150 ms), with the width animating 112 ⇄ 136.
 
 **Expanded layout, top to bottom** (padding 16, gaps 12):
 
@@ -168,6 +181,7 @@ screen's top edge. The **expanded panel** follows the Windows light/dark setting
 |---|---|---|---|
 | `PillBackground` | `#121214` | `#121214` | Solid, the same in both themes |
 | `PillText` | `#F2F2F5` | `#F2F2F5` | |
+| `PillTextSecondary` | `#A0A0AB` | `#A0A0AB` | Dimmed pill text (paused timer). The same in both themes because the pill is always dark (added 2026-11-17). |
 | `PillAccent` | `#F5A524` | `#F5A524` | The pill's "n today" dot. Always the dark-theme amber, because the pill is always dark (added 2026-11-17). |
 | `Background` (panel) | `#F7F7F4` | `#1B1B1F` | **Solid** in v0.1. No acrylic or blur: that's hard in WPF and costs CPU. |
 | `Surface` (rows on hover, input) | `#FFFFFF` | `#26262C` | |

@@ -9,6 +9,7 @@
   <SolidColorBrush x:Key="PillBackgroundBrush" Color="#121214" />
   <SolidColorBrush x:Key="PillTextBrush" Color="#F2F2F5" />
   <SolidColorBrush x:Key="PillAccentBrush" Color="#F5A524" />
+  <SolidColorBrush x:Key="PillTextSecondaryBrush" Color="#A0A0AB" />
 
   <!-- Panel -->
   <SolidColorBrush x:Key="BackgroundBrush" Color="#F7F7F4" />

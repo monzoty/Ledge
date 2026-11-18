@@ -36,6 +36,10 @@ public sealed partial class TimerViewModel : ObservableObject
     [ObservableProperty]
     private string _remainingText = string.Empty;
 
+    /// <summary>Fraction of the session LEFT, 1 → 0: the pill ring's arc (DESIGN.md §2 "Pill timer").</summary>
+    [ObservableProperty]
+    private double _progress;
+
     [ObservableProperty]
     private int _selectedMinutes = DefaultPresetMinutes;
 
@@ -153,6 +157,7 @@ public sealed partial class TimerViewModel : ObservableObject
         State = _timer.State;
         LinkedTaskId = _timer.Session?.TaskId;
         RemainingText = State == FocusTimerState.Idle ? string.Empty : Format(_timer.Remaining);
+        Progress = _timer.Session is { } session ? _timer.Remaining / session.Duration : 0;
 
         // The session ended (stopped or finished) while we were asking: nothing left to replace.
         if (State == FocusTimerState.Idle && IsAskingToReplace)

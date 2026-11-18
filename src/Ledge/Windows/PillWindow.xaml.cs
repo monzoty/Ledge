@@ -56,6 +56,7 @@ public sealed partial class PillWindow : Window
     private readonly SettingsService _settings;
     private readonly ILogger<PillWindow> _log;
     private readonly TimerViewModel _timer;
+    private readonly PillViewModel _pill;
 
     /// <summary>When the panel last closed because another window was activated.</summary>
     private long _closedByDeactivationAt;
@@ -82,6 +83,7 @@ public sealed partial class PillWindow : Window
         SettingsService settings,
         ThemeService theme,
         TimerViewModel timer,
+        PillViewModel pill,
         ILogger<PillWindow> log)
     {
         _log = log;
@@ -108,8 +110,16 @@ public sealed partial class PillWindow : Window
         UndoHint.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
         DataNotice.IsVisibleChanged += (_, _) => Dispatcher.BeginInvoke(ResizeToContentIfOpen, DispatcherPriority.Loaded);
 
-        // The pill's "n today" / "All clear" reads the same ViewModel.
-        PillContent.DataContext = tasks;
+        // The collapsed pill: "All clear", "n today" or the timer, and its width.
+        _pill = pill;
+        PillContent.DataContext = pill;
+        pill.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(PillViewModel.Mode))
+            {
+                AnimatePillWidth();
+            }
+        };
 
         // The timer row has its own ViewModel; the question it can show
         // ("Stop the current session…?") changes the panel's height.

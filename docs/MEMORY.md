@@ -16,11 +16,10 @@
   checklist is still pending (reboot and it's just there, configured). Fix
   anything it finds on a `fix/...` branch.
 - **M5 (focus timer)** is on branch `m5-focus-timer`.
-  - **5a** (Core timer) is committed.
-  - **5b** (timer row, Ctrl+Enter, linked-task marker, replace question) is
-    built, tested and **seen running**, but not yet committed.
+  - **5a** (Core timer) and **5b** (timer row) are committed.
+  - **5c** (pill ring and `mm:ss`, 136 wide, paused look, `PillViewModel`) is
+    built, tested and seen running, but not yet committed.
   - **Next steps:**
-    - 5c: the pill ring and `mm:ss`
     - 5d: the notification
     - 5e: hiding the pill over full-screen apps
 
@@ -33,7 +32,7 @@
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
 | M4 Background app | ✅ | Tray, single-instance signal, settings.json, Settings window, light theme, file logging. Manual check still pending. |
-| M5 Focus timer | in progress | 5a `1868964`; 5b built (uncommitted) |
+| M5 Focus timer | in progress | 5a `1868964`, 5b `e0882b5`; 5c built (uncommitted) |
 
 ## Gotchas and lessons learned
 
@@ -146,6 +145,11 @@
 - **`git commit -m @'…'@` can fail silently** when the message contains quotes.
   Write the message to a file and use `git commit -F <file>`, then check
   `git log`.
+- **Windows PowerShell 5.1 runs the old .NET Framework,** so it can't load the
+  app's .NET 9 DLLs. To check rendering, write a test instead: render to a
+  `RenderTargetBitmap` on an STA thread and check pixels (see
+  `ProgressRingTests`). Check the middle of strokes, not their anti-aliased
+  ends.
 - **Red "NativeCommandError" output after `git` commands** is just git's
   progress text on stderr; it isn't an error.
 - **In scripted UI tests, the first hotkey right after start-up is

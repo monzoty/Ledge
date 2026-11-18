@@ -223,6 +223,7 @@ public sealed partial class App : Application
         // thread's context: timer updates get posted back to it.
         services.AddSingleton(sp => new TimerViewModel(sp.GetRequiredService<IFocusTimer>(), SynchronizationContext.Current));
         services.AddSingleton<TaskListViewModel>();
+        services.AddSingleton<PillViewModel>();
         services.AddSingleton<PillWindow>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsWindow>();
@@ -249,7 +250,7 @@ public sealed partial class App : Application
         Resources["TaskDoneDuration"] = new Duration(TimeSpan.Zero);
         Resources["InboxChevronDuration"] = new Duration(TimeSpan.Zero);
         Resources["TaskRemoveDuration"] = new Duration(TimeSpan.Zero);
-        Resources["PillLabelDuration"] = new Duration(TimeSpan.Zero);
+        Resources["PillLabelDuration"] = new Duration(TimeSpan.Zero); // also the pill's width change
     }
 
     /// <summary>

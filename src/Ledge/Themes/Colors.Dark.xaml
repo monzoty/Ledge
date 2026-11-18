@@ -12,6 +12,8 @@
   <SolidColorBrush x:Key="PillTextBrush" Color="#F2F2F5" />
   <!-- The "3 today" dot: always the dark-theme amber, because the pill is always dark (DESIGN.md §3) -->
   <SolidColorBrush x:Key="PillAccentBrush" Color="#F5A524" />
+  <!-- Dimmed pill text (paused timer); the dark-theme grey in both themes -->
+  <SolidColorBrush x:Key="PillTextSecondaryBrush" Color="#A0A0AB" />
 
   <!-- Panel -->
   <SolidColorBrush x:Key="BackgroundBrush" Color="#1B1B1F" />

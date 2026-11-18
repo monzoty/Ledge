@@ -21,7 +21,10 @@
   <Thickness x:Key="PillIconGap">4,0,0,0</Thickness>
   <!-- "3 today" status dot (DESIGN.md §2): 6 DIP Accent circle, same 4 DIP gap -->
   <sys:Double x:Key="PillDotSize">6</sys:Double>
-  <!-- "All clear" ↔ "n today" crossfade (DESIGN.md §4). Set to 0 by App when animations are off. -->
+  <!-- Pill timer ring (DESIGN.md §2 "Pill timer"): 12 DIP, 2 DIP stroke, track at 30 % -->
+  <sys:Double x:Key="PillRingThickness">2</sys:Double>
+  <sys:Double x:Key="PillRingTrackOpacity">0.3</sys:Double>
+  <!-- Pill label cross-fade and width change (DESIGN.md §4). Set to 0 by App when animations are off. -->
   <Duration x:Key="PillLabelDuration">0:0:0.150</Duration>
 
   <!--
