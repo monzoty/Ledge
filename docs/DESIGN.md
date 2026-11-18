@@ -175,6 +175,14 @@ All sizes are in DIPs (WPF units; they scale automatically with the display).
     rounded shape (pill or panel). It's invisible except during the pulse:
     twice, opacity 0 → 1 → 0, 600 ms each (§4). There's no pulse when Windows
     animations are off.
+- **Full-screen apps** (PRD F1.6, decided 2026-11-18): while a full-screen app
+  is in front (a video, game or slideshow), the pill fades out over **150 ms**
+  (`QuadraticEase` EaseOut, the label cross-fade's motion) and fades back in
+  when it leaves. It's instant when Windows animations are off.
+  - **Hover is off** while hidden, so the mouse at the top of a game or video
+    never opens the panel.
+  - **The hotkey still opens the panel** on top. When it's closed again, the
+    pill hides again if the full-screen app is still in front.
 - **Data notice** (task file restored or reset): a line at the **bottom of
   the panel**, where the undo hint goes, in `Small` text in `Danger`. It wraps
   to as many lines as it needs, at least one row high (32), 12 DIP in. It shows

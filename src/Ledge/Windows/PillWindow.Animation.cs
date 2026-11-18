@@ -139,6 +139,23 @@ public sealed partial class PillWindow
         PulseRing.BeginAnimation(OpacityProperty, pulse);
     }
 
+    /// <summary>
+    /// Shows or hides the whole pill for full-screen apps (DESIGN.md §5):
+    /// fade over 150 ms, and switch hover off while hidden. An open panel
+    /// (opened with the hotkey) always stays visible until it's closed.
+    /// </summary>
+    private void ApplyFullscreenVisibility()
+    {
+        var visible = !_hiddenForFullscreen || IsExpanded;
+
+        // Hit-testing off = the hover zone can't be entered, so the mouse at the
+        // top of a game or video never opens the panel.
+        HoverZone.IsHitTestVisible = visible;
+
+        var duration = ((Duration)FindResource("PillLabelDuration")).TimeSpan;
+        Animate(HoverZone, OpacityProperty, visible ? 1 : 0, TimeSpan.Zero, duration, ResizeEasing);
+    }
+
     /// <summary>The collapsed pill's width: 136 while showing a timer, otherwise 112 (DESIGN.md §2).</summary>
     private double CollapsedWidth() =>
         Double(_pill.Mode == PillMode.Timer ? "PillTimerWidth" : "PillWidth");

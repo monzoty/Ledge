@@ -116,7 +116,7 @@ Notepad → hotkey → Esc → keep typing in Notepad without clicking.
 - [x] Timer row: presets 15/25/50, start/pause/stop; Ctrl+Enter starts on the selected task
 - [x] The pill shows a ring and `mm:ss` (136 × 28); paused state
 - [x] Notification when finished (+ "Mark task done" for a linked task); pill pulse
-- [ ] Hide the pill while a fullscreen app is in front (`SHQueryUserNotificationState` + foreground hook)
+- [x] Hide the pill while a fullscreen app is in front (app bar `ABN_FULLSCREENAPP` + `SHQueryUserNotificationState` at start-up; see ARCHITECTURE §6)
 
 **Done when:** a 25-minute session is accurate to the second after sleep/wake, and the pill
 hides during a fullscreen YouTube video and a PowerPoint slideshow.

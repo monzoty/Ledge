@@ -173,6 +173,68 @@ internal static partial class NativeMethods
     [LibraryImport("dwmapi.dll")]
     internal static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int valueSize);
 
+    // --- Full-screen detection (app bar) -----------------------------------
+
+    /// <summary>Registers a new app bar (SHAppBarMessage).</summary>
+    internal const uint AbmNew = 0x00000000; // ABM_NEW
+
+    /// <summary>Unregisters an app bar.</summary>
+    internal const uint AbmRemove = 0x00000001; // ABM_REMOVE
+
+    /// <summary>
+    /// Sent (as wParam of our callback message) when a full-screen app opens
+    /// (lParam ≠ 0) or closes (lParam = 0).
+    /// https://learn.microsoft.com/windows/win32/shell/abn-fullscreenapp
+    /// </summary>
+    internal const nint AbnFullscreenApp = 0x00000002; // ABN_FULLSCREENAPP
+
+    /// <summary>
+    /// The data block every SHAppBarMessage call takes. We only fill in the
+    /// size, our window and our callback message; the rest stays zero because
+    /// this app bar never reserves any screen space.
+    /// https://learn.microsoft.com/windows/win32/api/shellapi/ns-shellapi-appbardata
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct AppBarData
+    {
+        public uint CbSize;
+        public nint HWnd;
+        public uint UCallbackMessage;
+        public uint UEdge;
+        public Rect Rc;
+        public nint LParam;
+    }
+
+    /// <summary>
+    /// Talks to the shell's app-bar system (the taskbar is an app bar). We use it
+    /// only to be told when a full-screen app opens or closes.
+    /// https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-shappbarmessage
+    /// </summary>
+    [LibraryImport("shell32.dll")]
+    internal static partial nuint SHAppBarMessage(uint message, ref AppBarData data);
+
+    /// <summary>
+    /// Gives a window message a system-wide number for a name: used for our own
+    /// app-bar callback, and to hear "TaskbarCreated" (explorer.exe restarted).
+    /// https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-registerwindowmessagew
+    /// </summary>
+    [LibraryImport("user32.dll", EntryPoint = "RegisterWindowMessageW", StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial uint RegisterWindowMessage(string name);
+
+    // QUERY_USER_NOTIFICATION_STATE values that mean "a full-screen app is in front".
+    internal const int QunsBusy = 2;                 // QUNS_BUSY: full-screen app or presentation settings
+    internal const int QunsRunningD3dFullScreen = 3; // QUNS_RUNNING_D3D_FULL_SCREEN: a full-screen game
+    internal const int QunsPresentationMode = 4;     // QUNS_PRESENTATION_MODE
+
+    /// <summary>
+    /// Asks Windows whether now is a good time to bother the user, e.g. not
+    /// during a full-screen app. Used once at start-up; after that the app-bar
+    /// message tells us about changes. Returns an HRESULT (0 = success).
+    /// https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-shqueryusernotificationstate
+    /// </summary>
+    [LibraryImport("shell32.dll")]
+    internal static partial int SHQueryUserNotificationState(out int state);
+
     /// <summary>"Any process" for AllowSetForegroundWindow.</summary>
     internal const int AsfwAny = -1; // ASFW_ANY
 

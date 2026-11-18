@@ -16,11 +16,16 @@
   checklist is still pending (reboot and it's just there, configured). Fix
   anything it finds on a `fix/...` branch.
 - **M5 (focus timer)** is on branch `m5-focus-timer`.
-  - **5a** (Core timer), **5b** (timer row) and **5c** (pill timer) are
-    committed.
-  - **5d** (tray notification, "Mark task done" panel line, pill pulse,
-    asleep wording) is built and tested, but not yet committed.
-  - **Next:** 5e, hiding the pill over full-screen apps.
+  - **M5 is complete and merged into `main`** (2026-11-18). It covers the
+    Core timer, timer row, pill timer, end-of-session notification and line,
+    and hiding over full-screen apps.
+  - **Still to check by hand** (ROADMAP "Done when"; fix anything on a
+    `fix/...` branch):
+    - accuracy after sleep/wake,
+    - hiding during a full-screen YouTube video and a PowerPoint slideshow,
+    - whether the end-of-session notification shows up in the notification
+      centre (the e2e screenshot didn't catch it),
+    - the pill pulse.
 
 ## Milestone log
 
@@ -31,7 +36,7 @@
 | M2 Hotkey + expand | ✅ | Win+Alt+L, hover delays, focus hand-off, morph animation |
 | M3 Tasks + storage | ✅ `3e40d8c` | Core model, atomic JSON storage, autosave, MVVM + DI, Today/Inbox, keyboard, delete/undo, rename, pill count. Reorder moved to v0.2. |
 | M4 Background app | ✅ | Tray, single-instance signal, settings.json, Settings window, light theme, file logging. Manual check still pending. |
-| M5 Focus timer | in progress | 5a `1868964`, 5b `e0882b5`, 5c `93db9a4`; 5d built (uncommitted) |
+| M5 Focus timer | ✅ | Timestamp timer, timer row, pill ring, notification + "Mark task done", full-screen hiding. Hand-run checks pending. |
 
 ## Gotchas and lessons learned
 
@@ -105,6 +110,16 @@
   how a space typed in the rename box doesn't also tick the task.
 - **`TaskbarIcon.ForceCreate()` turns on Windows Efficiency Mode by default.**
   Pass `false`.
+- **To know about full-screen apps, register a hidden app bar.** It reserves
+  no space and gets `ABN_FULLSCREENAPP` like the taskbar does. A
+  foreground-window hook misses full screen inside the same window (browser
+  video). The app bar's window must be top-level (not message-only) to also
+  hear `TaskbarCreated`.
+- **To test full screen without a video,** use a borderless WinForms window
+  covering the screen (`scratchpad/fullscreen-form.ps1`). Windows treats it
+  as full screen.
+- **A waiting loop that sleeps 5 s can't hit a 1-second moment.** Wait in
+  small steps near the target time (the 5d e2e script missed the pulse).
 - **Tray notifications can't have buttons,** and Windows holds them back
   during Do Not Disturb or a full-screen app (`respectQuietTime`). Toasts with
   buttons need an app identity and Windows App SDK or Toolkit notifications;

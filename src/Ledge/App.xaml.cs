@@ -95,6 +95,15 @@ public sealed partial class App : Application
         // When a focus session ends: notification + panel line (the service), pill pulse (the window).
         _host.Services.GetRequiredService<FocusCompletionService>().Completed += (_, _) => window.PulsePill();
 
+        // Step out of the way of full-screen apps (PRD F1.6).
+        var fullscreen = _host.Services.GetRequiredService<FullscreenWatcher>();
+        fullscreen.Changed += (_, _) =>
+        {
+            _log.LogInformation("Full-screen app in front: {Fullscreen}", fullscreen.IsFullscreenAppInFront);
+            window.SetHiddenForFullscreen(fullscreen.IsFullscreenAppInFront);
+        };
+        fullscreen.Start();
+
         // Later launches of Ledge open this panel. Their signal arrives on a
         // thread-pool thread, so hop to the UI thread first.
         _singleInstance.OpenPanelRequested += (_, _) => Dispatcher.BeginInvoke(window.OpenPanel);
@@ -219,6 +228,7 @@ public sealed partial class App : Application
         services.AddSingleton<DayRolloverService>();
         services.AddSingleton<TrayService>();
         services.AddSingleton<FocusCompletionService>();
+        services.AddSingleton<FullscreenWatcher>();
 
         // ViewModels and windows. Settings is "transient": a fresh window (and
         // ViewModel) each time it's opened, since a closed WPF window can't be shown again.

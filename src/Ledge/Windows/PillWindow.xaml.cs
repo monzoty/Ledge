@@ -61,6 +61,9 @@ public sealed partial class PillWindow : Window
     /// <summary>When the panel last closed because another window was activated.</summary>
     private long _closedByDeactivationAt;
 
+    /// <summary>A full-screen app is in front: the pill is hidden unless the panel is open.</summary>
+    private bool _hiddenForFullscreen;
+
     // Waits for Win/Alt/Ctrl/Shift to be released before handing focus back.
     private readonly DispatcherTimer _returnFocusTimer;
 
@@ -338,6 +341,24 @@ public sealed partial class PillWindow : Window
             MessageBox.Show(message, (string)FindResource("AppName"), MessageBoxButton.OK, MessageBoxImage.Warning));
     }
 
+    /// <summary>
+    /// A full-screen app came to the front (true) or left (false). Hides the
+    /// pill (DESIGN.md §5); a panel that's open with focus stays until closed,
+    /// and one that's only hover-open closes now.
+    /// </summary>
+    public void SetHiddenForFullscreen(bool hidden)
+    {
+        _hiddenForFullscreen = hidden;
+
+        if (hidden && IsExpanded && !HasFocus)
+        {
+            Collapse(); // also re-applies visibility
+            return;
+        }
+
+        ApplyFullscreenVisibility();
+    }
+
     /// <summary>Tray icon left-click: like the hotkey, minus the click that just closed the panel.</summary>
     public void TogglePanelFromTray()
     {
@@ -474,6 +495,9 @@ public sealed partial class PillWindow : Window
         IsExpanded = true;
         _tasks.Refresh(); // before measuring, so the panel opens at the right height
         AnimateExpand();
+
+        // Over a full-screen app the pill is hidden, but the hotkey still opens the panel.
+        ApplyFullscreenVisibility();
     }
 
     /// <summary>
@@ -496,6 +520,9 @@ public sealed partial class PillWindow : Window
 
         // Undo only works while the panel is open (PRD F3.4); notices are seen once.
         _tasks.OnPanelClosed();
+
+        // Still a full-screen app in front? Then the pill steps out of the way again.
+        ApplyFullscreenVisibility();
     }
 
     // --- Placement -------------------------------------------------------------
